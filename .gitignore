@@ -13,6 +13,12 @@ target/
 .springBeans
 .sts4-cache
 
+# Exclude the specific application properties file
+src/main/resources/application.properties
+
+# If you use a different application profile, you might want to exclude that too:
+# src/main/resources/application-dev.properties
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
