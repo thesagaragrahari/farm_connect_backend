@@ -1,5 +1,6 @@
 package com.farmconnect.krishisetu.users_management.entity;
 
+import org.locationtech.jts.geom.Point;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -29,9 +30,11 @@ public class User {
     @Column(name = "role", nullable = false, length = 20)
     private String role;
 
+    @Builder.Default
     @Column(name = "created_at", columnDefinition = "timestamp default now()")
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Builder.Default    
     @Column(name = "updated_at", columnDefinition = "timestamp default now()")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
@@ -40,4 +43,14 @@ public class User {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    @Column(name = "location", columnDefinition = "GEOGRAPHY(Point, 4326)")
+    private Point location;
+
 }
+
+// for setting location point
+// GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
+
+// Point point = factory.createPoint(new Coordinate(longitude, latitude));
+// user.setLocation(point);

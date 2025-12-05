@@ -1,6 +1,7 @@
 package com.farmconnect.krishisetu.users_management.controllers;
 
 
+import com.farmconnect.krishisetu.users_management.model.UserProfile;
 import com.farmconnect.krishisetu.users_management.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +25,10 @@ public class UserController {
         return userService.helloUser();
     };
 
-    // @GetMapping("/profile/{userId}/{userType}")
-    // public ResponseEntity<UserProfile> getUserProfile(@PathVariable Long userId, @PathVariable String userType){
-    //     return userService.getUserProfile(userId, userType);
-    // }
+    @GetMapping("/profile/{userId}/{role}")
+    public ResponseEntity<?> getUserProfile(@PathVariable Long userId, @PathVariable String role){
+        return userService.getUserProfile(userId, role);
+    }
     
     // @PostMapping("/register/{userType}")
     // public ResponseEntity<UserProfile> registerUser(@PathVariable String userType, @RequestBody UserRegistrationRequest request){

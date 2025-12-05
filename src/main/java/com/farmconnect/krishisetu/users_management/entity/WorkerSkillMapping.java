@@ -23,8 +23,7 @@ public class WorkerSkillMapping {
     @Column(name = "skill_id", nullable = false)
     private Integer skillId;
 
-    // Optional: you can map relationships if you have Worker and Skill entities
-    /*
+    
     @ManyToOne
     @JoinColumn(name = "worker_id", insertable = false, updatable = false)
     private Worker worker;
@@ -32,5 +31,5 @@ public class WorkerSkillMapping {
     @ManyToOne
     @JoinColumn(name = "skill_id", insertable = false, updatable = false)
     private Skill skill;
-    */
+    
 }

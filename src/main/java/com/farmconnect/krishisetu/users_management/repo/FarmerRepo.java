@@ -8,5 +8,6 @@ import com.farmconnect.krishisetu.users_management.entity.Farmer;
 @Repository
 public interface FarmerRepo extends JpaRepository<Farmer, Integer> {
     // Optional: find farmers by userId
-    Farmer findByUserId(Integer userId);
+    
+    Farmer findByUserUserId(Long userId);
 }
