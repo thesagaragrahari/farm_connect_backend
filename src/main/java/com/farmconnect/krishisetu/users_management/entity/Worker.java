@@ -3,7 +3,7 @@ package com.farmconnect.krishisetu.users_management.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "workers", schema = "users")
@@ -18,8 +18,9 @@ public class Worker {
     @Column(name = "worker_id", nullable = false)
     private Integer workerId;
 
-    @Column(name = "user_id", nullable = false)
-    private Integer userId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
+    private User user;
 
     @Column(name = "daily_wage", precision = 10, scale = 2)
     private BigDecimal dailyWage;
@@ -33,18 +34,15 @@ public class Worker {
     @Column(name = "job_type", nullable = false, length = 50)
     private String jobType;
 
-    @Column(name = "machine_id", length = 50)
-    private String machineId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "machine_id", referencedColumnName = "machine_id", nullable = false)
+    private Machine machine;
 
-    @Column(name = "created_at", columnDefinition = "timestamp default now()")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    // One worker → many mappings
+    @OneToMany(mappedBy = "worker", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WorkerSkillMapping> workerSkillsMappings;
 
-    @Column(name = "updated_at", columnDefinition = "timestamp default now()")
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    // @OneToMany(mappedBy = "worker", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // private List<Skill> workerSkills;
 
-    // Optional: automatically update `updatedAt` before saving
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
 }

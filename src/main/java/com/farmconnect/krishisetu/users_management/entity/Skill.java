@@ -1,5 +1,7 @@
 package com.farmconnect.krishisetu.users_management.entity;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,4 +26,8 @@ public class Skill {
 
     @Column(name = "skill_description", length = 255)
     private String skillDescription;
+
+    @OneToMany(mappedBy = "skill", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WorkerSkillMapping> workerSkillsMappings;
+    
 }

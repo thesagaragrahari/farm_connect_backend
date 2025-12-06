@@ -17,19 +17,14 @@ public class WorkerSkillMapping {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "worker_id", nullable = false)
-    private Integer workerId;
 
-    @Column(name = "skill_id", nullable = false)
-    private Integer skillId;
-
-    
     @ManyToOne
-    @JoinColumn(name = "worker_id", insertable = false, updatable = false)
+    @JoinColumn(name = "worker_id", nullable = false)
     private Worker worker;
 
+    // Many mappings → one skill
     @ManyToOne
-    @JoinColumn(name = "skill_id", insertable = false, updatable = false)
+    @JoinColumn(name = "skill_id", nullable = false)
     private Skill skill;
     
 }

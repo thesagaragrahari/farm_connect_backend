@@ -18,8 +18,6 @@ public class Farmer {
     @Column(name = "farmer_id", nullable = false)
     private Integer farmerId;
 
-    // @Column(name = "user_id", nullable = false)
-    // private Integer userId;
 
     @Column(name = "land_area_acre", precision = 10, scale = 2)
     private String landAreaAcre;
