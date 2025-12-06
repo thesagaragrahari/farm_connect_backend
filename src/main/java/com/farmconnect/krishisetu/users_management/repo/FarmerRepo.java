@@ -10,4 +10,6 @@ public interface FarmerRepo extends JpaRepository<Farmer, Integer> {
     // Optional: find farmers by userId
     
     Farmer findByUserUserId(Long userId);
+
+    Farmer findByUserEmail(String email);
 }

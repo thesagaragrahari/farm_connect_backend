@@ -1,5 +1,7 @@
 package com.farmconnect.krishisetu.users_management.mapper;
 
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping; // <-- Import Mapping
 import org.mapstruct.Named;
@@ -17,4 +19,6 @@ public interface SkillMapper {
     SkillProfile toSkillModel(Skill skill);
     
     Skill toSkillEntity(SkillProfile skillProfile);
+
+    List<SkillProfile> toSkillModelList(List<Skill> validSkills);
 }

@@ -17,4 +17,6 @@ public interface SkillRepo extends JpaRepository<Skill, Integer> {
     // Check if a skill exists by name
     boolean existsBySkillName(String skillName);
 
+    List<Skill> findBySkillNameIn(List<String> skillReq);
+
 }

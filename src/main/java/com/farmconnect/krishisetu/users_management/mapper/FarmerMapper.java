@@ -16,5 +16,7 @@ public interface FarmerMapper {
     @Mapping(source = "userProfile", target = "user")
     @Mapping(source = "landArea", target = "landAreaAcre")
     Farmer toFarmerEntity(FarmerProfile farmerProfile);
+
+    void updateFarmerEntityFromModel(FarmerProfile farmerProfile, Farmer existingFarmer);
 }
 

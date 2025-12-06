@@ -5,6 +5,7 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import com.farmconnect.krishisetu.users_management.entity.Skill;
 import com.farmconnect.krishisetu.users_management.entity.Worker;
 import com.farmconnect.krishisetu.users_management.entity.WorkerSkillMapping;
 import com.farmconnect.krishisetu.users_management.model.SkillProfile;
@@ -38,5 +39,11 @@ public interface WorkerMapper {
     @Mapping(target = "workerId", ignore = true) // Ignore auto-generated ID
     @Mapping(target = "workerSkillsMappings", ignore = true) // Ignore the collection for entity creation
     Worker toWorkerEntity(WorkerProfile workerProfile);
+
+    List<WorkerProfile> toWorkerModelList(List<Worker> workers);
+
+    void updateWorkerEntityFromModel(WorkerProfile workerProfile, Worker existingWorker);
+
+    
 
 }

@@ -1,8 +1,9 @@
 package com.farmconnect.krishisetu.users_management.controllers;
 
 
-import com.farmconnect.krishisetu.users_management.model.UserProfile;
-import com.farmconnect.krishisetu.users_management.reqres.UserRegistrationRequest;
+import com.farmconnect.krishisetu.users_management.model.SkillProfile;
+import com.farmconnect.krishisetu.users_management.model.WorkerProfile;
+import com.farmconnect.krishisetu.users_management.reqres.UserProfileSuperSet;
 import com.farmconnect.krishisetu.users_management.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/users/")
 public class UserController {
 
     @Autowired
@@ -21,58 +22,66 @@ public class UserController {
     /*     * User Management APIs
      */
 
-    @GetMapping("/hello")
+    @GetMapping("hello")
     public String helloUser(){
         return userService.helloUser();
     };
 
-    @GetMapping("/profile/{userId}/{role}")
+    @GetMapping("get/profile/{userId}/{role}")
     public ResponseEntity<?> getUserProfile(@PathVariable Long userId, @PathVariable String role){
         return userService.getUserProfile(userId, role);
     }
     
-    // @PostMapping("/register/{role}")
-    // public ResponseEntity<?> registerUser(@PathVariable String role, @RequestBody UserRegistrationRequest request){
-    //     return userService.registerUser(role, request);
+    // @PostMapping("/register")
+    // public ResponseEntity<?> registerUser(@RequestBody UserProfile request){
+    //     return userService.registerUser(request);
     // }
 
     // @PostMapping("/login")
-    // public ResponseEntity<UserLoginResponse> loginUser(@RequestBody UserLoginRequest request){
+    // public ResponseEntity<?> loginUser(@RequestBody ){
     //     return userService.loginUser(request); 
     // }
 
-    // @PostMapping("/update/profile/{userId}/{userType}")
-    // public ResponseEntity<UserProfile> updateUserProfile(@PathVariable Long userId, @PathVariable String userType, @RequestBody UserProfileUpdateRequest request){
-    //     return userService.updateUserProfile(userId, userType, request);
+    // @PostMapping("/update/profile/{email}/{role}")
+    // public ResponseEntity<?> updateUserProfile(@PathVariable String email, @PathVariable String role, @RequestBody UserProfileSuperSet request){
+    //     return userService.updateUserProfile(email, role, request);
     // }
 
     
     // /*     * Worker Management APIs
     //  */
-    // @PostMapping("/workers/active")
-    // public ResponseEntity<List<WorkerProfile>> getActiveWorkers(@RequestBody WorkerFilterRequest request){
-    //     return userService.getActiveWorkers(request);
-    // }
+    @PostMapping("filter/workers/available/{email}")
+    public ResponseEntity<List<WorkerProfile>> getActiveWorkers(@PathVariable String email){
+        return userService.getActiveWorkers(email);
+    }
 
     // @PostMapping("/workers/by/location/{radius}")
     // public ResponseEntity<List<WorkerProfile>> getWorkersInRadius(@RequestBody WorkerFilterRequest request){
     //     return userService.getWorkersInRadius(request);
     // }
 
-    // @PostMapping("/workers/update/status/{workerId}")
-    // public ResponseEntity<WorkerProfile> updateWorkerStatus(@PathVariable Long workerId){
-    //     return userService.updateWorkerStatus(workerId);
-    // }
+   
+    @PostMapping("filter/workers/jobtype/{email}/{jobType}")
+    public ResponseEntity<List<WorkerProfile>> getWorkersByJobType(@PathVariable String email,@PathVariable String jobType){
+        return userService.getWorkersByJobType(jobType);
+    }
 
-    // @PostMapping("/workers/jobtype/{jobType}")
-    // public ResponseEntity<List<WorkerProfile>> getWorkersByJobType(@PathVariable String jobType, @RequestBody WorkerFilterRequest request){
-    //     return userService.getWorkersByJobType(jobType, request);
-    // }
 
-    // @PostMapping("/workers/skills")
-    // public ResponseEntity<List<WorkerProfile>> getWorkersBySkills(@RequestBody WorkerSkillsFilterRequest request){
-    // return userService.getWorkersBySkills(request);
-    // }
+    @PostMapping("filter/workers/byskills/{email}")
+    public ResponseEntity<List<WorkerProfile>> getWorkersBySkills(@PathVariable String email,@RequestBody List<String> skillReq){
+        return userService.getWorkersBySkills(email, skillReq);
+    }
+
+    @GetMapping("get/worker/skills/{email}")
+    public ResponseEntity<List<SkillProfile>> getWorkersSkills(@PathVariable String email){
+        return userService.getWorkersSkills(email);
+    }
+
+    @PostMapping("update/worker/status/{email}/{status}")
+    public ResponseEntity<WorkerProfile> updateWorkerStatus(@PathVariable String email, @PathVariable String status){
+        return userService.updateWorkerStatus(email,status);
+    }
+
     
 
 
