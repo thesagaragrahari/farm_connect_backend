@@ -7,7 +7,7 @@ import com.farmconnect.krishisetu.job_management.model.JobLocationProfile;
 
 
 @Mapper(componentModel = "spring")
-public interface JobLcationMapper{
+public interface JobLocationMapper{
 
     JobLocationProfile toJobLocationModel(JobLocation jobLocation );
     

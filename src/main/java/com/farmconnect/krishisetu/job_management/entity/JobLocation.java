@@ -1,38 +1,40 @@
 package com.farmconnect.krishisetu.job_management.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-import java.util.UUID;
 import org.locationtech.jts.geom.Point;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 
+import java.util.UUID;
 
+// Note: If you are using Hibernate Spatial or similar, 
+// you might need additional configuration or annotations 
+// to properly handle the 'geography(Point,4326)' type.
 
 @Entity
 @Table(name = "job_location", schema = "jobs")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class JobLocation {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @org.hibernate.annotations.GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
-    @Column(name = "job_location_id", updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID) // Indicates UUID generation
+    @Column(name = "job_location_id")
     private UUID jobLocationId;
 
-    @ManyToOne
-    @JoinColumn(name = "job_id", nullable = false)
-    private Job job;
+    // --- GEOGRAPHY/Spatial Type Handling ---
+    // You must use a specific JPA type or an extension (like Hibernate Spatial) 
+    // to map the PostgreSQL GEOGRAPHY type. Assuming a common standard for now.
+    @Column(name = "location")
+    private Point location; // Placeholder: Use a specific spatial object type here (e.g., Point, Geometry)
 
-    // PostGIS geography(Point,4326)
-    @Column(name = "location", columnDefinition = "geography(Point,4326)")
-    private Point location;
-
-    @Column(name = "address", columnDefinition = "TEXT")
+    @Column(name = "address", columnDefinition = "text")
     private String address;
 
     @Column(name = "city", length = 100)
@@ -43,4 +45,6 @@ public class JobLocation {
 
     @Column(name = "pincode", length = 20)
     private String pincode;
+
+    // Note: No explicit getters/setters/constructors are needed due to Lombok.
 }

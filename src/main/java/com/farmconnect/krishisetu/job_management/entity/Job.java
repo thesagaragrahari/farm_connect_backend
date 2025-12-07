@@ -1,65 +1,68 @@
 package com.farmconnect.krishisetu.job_management.entity;
 
+import com.farmconnect.krishisetu.users_management.entity.Farmer;
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
-
-import com.farmconnect.krishisetu.job_management.enums.JobStatus;
-import com.farmconnect.krishisetu.job_management.enums.JobTitle;
-import com.farmconnect.krishisetu.job_management.enums.JobType;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "job", schema = "jobs")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Job{
+public class Job {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
-    @Column(name = "job_id", updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID) // Maps to gen_random_uuid()
+    @Column(name = "job_id")
     private UUID jobId;
+
+    @Column(name = "title", length = 255, nullable = false)
+    private String title;
+    
+    @Column(name = "job_type", length = 255, nullable = false)
+    private String jobType;
+    
+    @Column(name = "status", length = 255, nullable = false)
+    private String status;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
+    
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+    
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+    
+    // --- FK 1: Farmer (Many-to-One) ---
+    // REFERENCES users.farmers (farmer_id)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "farmer_id")
+    private Farmer farmer;
 
-    @Builder.Default
-    @Column(name = "created_at", columnDefinition = "timestamp default now()")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    // --- FK 2: Job Location (Many-to-One) ---
+    // REFERENCES jobs.job_location (job_location_id)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "job_location_id")
+    private JobLocation jobLocation;
 
-    @Builder.Default
-    @Column(name = "updated_at", columnDefinition = "timestamp default now()")
-    private LocalDateTime updatedAt = LocalDateTime.now();
-
-    @Builder.Default
-    @Enumerated(EnumType.STRING)
-    @Column(name = "title", nullable = false)
-    private JobTitle title = JobTitle.PLOWING;
-
-    @Builder.Default    
-    @Enumerated(EnumType.STRING)
-    @Column(name = "job_type", nullable = false)
-    private JobType jobType = JobType.ONE_TIME;
-
-    @Builder.Default
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private JobStatus status = JobStatus.PENDING;
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    // --- FK 3: Job Worker Assignment (Many-to-One / Non-standard) ---
+    // REFERENCES jobs.job_worker_assignment (job_worker_assignment_id)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "job_worker_assignment_id")
+    private JobWorkerAssignment jobWorkerAssignment;
+    
+    // Note on ENUMs: The DDL uses custom PostgreSQL ENUM types 
+    // (jobs.job_title_enum, jobs.job_type_enum, jobs.job_status_enum).
+    // In Java, you would map these to String or custom Java Enums 
+    // with a specific Hibernate type mapping to ensure correctness.
 }
-
-
-
-

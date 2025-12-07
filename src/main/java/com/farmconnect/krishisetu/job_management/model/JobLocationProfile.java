@@ -1,21 +1,31 @@
 package com.farmconnect.krishisetu.job_management.model;
 
-import java.util.UUID;
 
 import org.locationtech.jts.geom.Point;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 
+import java.util.UUID;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class JobLocationProfile {
+
     private UUID jobLocationId;
-    private UUID jobId;
+
+    // --- Spatial Data Representation ---
+    // In a DTO, you typically send simplified coordinates 
+    // instead of the complex spatial object itself.
     private Point location;
+    
+    // Placeholder: If you send the raw spatial string/WKT
+    private String locationWkt; 
+    
+    // --- Address Fields ---
     private String address;
     private String city;
     private String state;

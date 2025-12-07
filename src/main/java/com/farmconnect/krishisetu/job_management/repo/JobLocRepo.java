@@ -11,5 +11,5 @@ import java.util.UUID;
 
 @Repository
 public interface JobLocRepo extends JpaRepository<JobLocation, UUID> {
-    Optional<JobLocation> findByJob(Job job);
+    
 }

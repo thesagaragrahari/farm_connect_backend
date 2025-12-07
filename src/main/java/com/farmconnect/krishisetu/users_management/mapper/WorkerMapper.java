@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 import com.farmconnect.krishisetu.users_management.entity.Skill;
 import com.farmconnect.krishisetu.users_management.entity.Worker;
@@ -42,7 +43,14 @@ public interface WorkerMapper {
 
     List<WorkerProfile> toWorkerModelList(List<Worker> workers);
 
-    void updateWorkerEntityFromModel(WorkerProfile workerProfile, Worker existingWorker);
+
+//     // Inside WorkerMapper.java
+// // You may need to update the nested User entity separately if you are not using an embedded User
+// // @Mapping(source = "userProfile", target = "user") - Avoid this in updates unless necessary
+//     @Mapping(target = "workerId", ignore = true) // Always ignore the Primary Key in update methods
+//     @Mapping(target = "user.userId", ignore = true) // Ignore the nested User PK
+//     @Mapping(source = "status", target = "status") // <--- FIX: Explicitly map WorkerProfile.status to Worker.user.status
+//     void updateWorkerEntityFromModel(WorkerProfile workerProfile, Worker existingWorker);
 
     
 
