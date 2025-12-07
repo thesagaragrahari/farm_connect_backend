@@ -31,20 +31,25 @@ public class Job{
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Builder.Default
     @Column(name = "created_at", columnDefinition = "timestamp default now()")
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Builder.Default
     @Column(name = "updated_at", columnDefinition = "timestamp default now()")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "title", nullable = false)
     private JobTitle title = JobTitle.PLOWING;
 
+    @Builder.Default    
     @Enumerated(EnumType.STRING)
     @Column(name = "job_type", nullable = false)
     private JobType jobType = JobType.ONE_TIME;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private JobStatus status = JobStatus.PENDING;

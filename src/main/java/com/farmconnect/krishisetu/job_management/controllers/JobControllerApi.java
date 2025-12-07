@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+
+import com.farmconnect.krishisetu.job_management.model.JobProfile;
+
 @RestController
 @RequestMapping("/api/jobs")
 public class JobControllerApi {
@@ -19,11 +22,10 @@ public class JobControllerApi {
     };
     /* apis for farmers */
 
-    // @PostMapping("farmer/create/{userId}/{userType}")
-    // public ResponseEntity<JobDetails> createJob(@PathVariable Long userId, @PathVariable
-    // String userType, @RequestBody JobCreationRequest request){
-    //     return jobService.createJob(userId, userType, request);
-    // }
+    @PostMapping("farmer/postjob/{email}")
+    public ResponseEntity<?> createJob(@PathVariable String email, @RequestBody JobProfile jobProfile){
+        return jobService.createJob(email,jobProfile );
+    }
 
     // @PostMapping("farmer/assign/job/{jobId}/{workerId}/{userType}")
     // public ResponseEntity<JobDetails> assignJobToWorker(@PathVariable Long jobId, @PathVariable Long workerId, @PathVariable String userType){

@@ -1,7 +1,6 @@
 package com.farmconnect.krishisetu.users_management.repo;
 
 
-import com.farmconnect.krishisetu.users_management.entity.Skill;
 import com.farmconnect.krishisetu.users_management.entity.Worker;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+import com.farmconnect.krishisetu.users_management.entity.Farmer;
 import com.farmconnect.krishisetu.users_management.entity.Worker;
 
 @Entity
@@ -30,6 +31,10 @@ public class JobWorkerAssignment {
     @ManyToOne
     @JoinColumn(name = "worker_id", nullable = false)
     private Worker worker;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "farmer_id",nullable = true)
+    private Farmer farmer;
 
     @Column(name = "assignment_status", length = 50, nullable = false)
     private String assignmentStatus = "assigned";
