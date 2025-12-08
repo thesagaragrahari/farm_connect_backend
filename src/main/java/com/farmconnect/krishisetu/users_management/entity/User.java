@@ -47,6 +47,14 @@ public class User {
     @Column(name = "location", columnDefinition = "GEOGRAPHY(Point, 4326)")
     private Point location;
 
+    @Column(name = "password")
+    private String password;
+
+    public User orElseThrow(Object object) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
+    }
+
 }
 
 // for setting location point

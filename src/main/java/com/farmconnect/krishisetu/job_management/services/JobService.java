@@ -2,6 +2,8 @@ package com.farmconnect.krishisetu.job_management.services;
 
 
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -30,8 +32,9 @@ class JobService {
             return ResponseEntity.status(404).build();
         }
         //validate email 
-        User user = userRepo.findByEmail(email);
-        if(user.getRole().equalsIgnoreCase((UserRole.FARMER).toString())){
+        Optional<User> user = userRepo.findByEmail(email);
+        User u = user.get();
+        if(u.getRole().equalsIgnoreCase((UserRole.FARMER).toString())){
             //create job logic
             
         }

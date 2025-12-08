@@ -21,5 +21,5 @@ public class UserProfile {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Point location;
-    
+    private String password;
 }
