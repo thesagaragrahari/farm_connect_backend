@@ -1,10 +1,9 @@
 package com.farmconnect.krishisetu.security.jwt;
 
-import com.farmconnect.krishisetu.security.service.UserDetailsServiceImpl;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+// com.farmconnect.krishisetu.security.jwt.AuthTokenFilter
+
+// ... existing imports ...
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,7 +11,13 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
+import com.farmconnect.krishisetu.security.service.UserDetailsServiceImpl;
+
+import io.jsonwebtoken.io.IOException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class AuthTokenFilter extends OncePerRequestFilter {
@@ -27,7 +32,26 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+            throws ServletException, IOException, java.io.IOException {
+
+        // --- REMOVE THIS BLOCK ---
+        // String path = request.getRequestURI();
+        // // Skip JWT validation for public routes
+        // if (path.startsWith("/api/auth/") || 
+        //     path.startsWith("/v3/api-docs") ||
+        //     path.startsWith("/swagger-ui")) {
+
+        //     filterChain.doFilter(request, response);
+        //     return;
+        // }
+        // -------------------------
+
+        // ADD: Skip JWT parsing and validation for CORS preflight (OPTIONS) requests.
+        // Spring Security already permits this in the config, but we skip the token logic here for cleanliness.
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         try {
             String jwt = parseJwt(request);
@@ -45,7 +69,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception e) {
-            // Log exception
+            // Log exception: e.g., token expired, or user not found, but let the filter chain continue
+            // Spring Security will then deny access if the path is protected and authentication failed.
         }
 
         filterChain.doFilter(request, response);

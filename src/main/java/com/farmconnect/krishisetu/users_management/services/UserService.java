@@ -65,16 +65,9 @@ class UserService {
     
     private static final Logger logger = LoggerFactory.getLogger(Service.class);
     
-
-    // Service methods implementation
-
     public String helloUser() {
         return "Hello, User!";
     }
-
-    
-
-
 
 
     public ResponseEntity<?> getUserProfile(Long userId, String role) {
@@ -156,32 +149,6 @@ class UserService {
     // }
 
 
-    // public ResponseEntity<?> registerUser(UserProfile request) {
-    //     if(request == null) {
-    //         return ResponseEntity.badRequest().body("Request body cannot be null");
-    //     }
-    //     if(request.getRole() == null || request.getRole().isEmpty() || request.getRole().isBlank()|| !UserRole.isValid(request.getRole())) {
-    //         return ResponseEntity.badRequest().body("Role cannot be null or empty");
-    //     }
-    //     if(request.getFullName() == null || request.getFullName().isEmpty() || request.getFullName().isBlank()) {
-    //         return ResponseEntity.badRequest().body("Name cannot be null or empty");
-    //     }
-    //     if(request.getEmail() == null || request.getEmail().isEmpty() || request.getEmail().isBlank()) {
-    //         return ResponseEntity.badRequest().body("Email cannot be null or empty");
-    //     } 
-    //     if(request.getPhone() == null || request.getPhone().isEmpty() || request.getPhone().isBlank()) {
-    //         return ResponseEntity.badRequest().body("Phone cannot be null or empty");
-    //     }
-    //     // already existing email check
-    //     User existingUser = userRepo.findByEmail(request.getEmail());
-    //     if(existingUser != null) {
-    //         return ResponseEntity.status(409).body("Email already registered");
-    //     }
-    //     User newUser = Umapper.toUserEntity(request);
-    //     userRepo.save(newUser);
-    //     return ResponseEntity.ok("User registered successfully");
-    // }
-
 
 
     // get workers by skills
@@ -200,9 +167,6 @@ class UserService {
         List<Integer> skillIds = validSkills.stream()
                     .map(Skill::getSkillId)
                     .toList();
-
-
-        //List<SkillProfile> skillProfiles = Smapper.toSkillModelList(validSkills);
         List<Worker> workers = workerRepo.findWorkersHavingAnySkill(skillIds);
         if(workers == null || workers.isEmpty()) {
             return ResponseEntity.status(404).build();
@@ -285,7 +249,7 @@ class UserService {
         workerRepo.save(worker);
         WorkerProfile workerProfile = Wmapper.toWorkerModel(worker);
         return ResponseEntity.ok(workerProfile);
-        }
+    }
 
 
 

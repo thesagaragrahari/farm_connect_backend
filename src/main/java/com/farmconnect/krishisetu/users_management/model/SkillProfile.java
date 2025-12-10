@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SkillProfile {
-    private Integer skillId;
+    //private Integer skillId;
     private String skillName;
     private String skillDescription;
 }

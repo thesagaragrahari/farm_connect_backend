@@ -35,7 +35,7 @@ public class Worker {
     private String jobType;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "machine_id", referencedColumnName = "machine_id", nullable = false)
+    @JoinColumn(name = "machine_id", referencedColumnName = "machine_id", nullable = true)
     private Machine machine;
 
     // One worker → many mappings

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MachineProfile {
 
-    private Integer machineId;
+    //private Integer machineId;
     private String machineName;
     // private String brand;
     // private String model;
@@ -17,5 +17,5 @@ public class MachineProfile {
     // private String availabilityStatus;
     private String machineUrl;
     private String machineDocId;
-    private Integer SkillId;
+    //private Integer SkillId;
 }
