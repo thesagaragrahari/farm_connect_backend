@@ -7,6 +7,7 @@ import com.farmconnect.krishisetu.users_management.reqres.UserProfileSuperSet;
 import com.farmconnect.krishisetu.users_management.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class UserController {
     public String helloUser(){
         return userService.helloUser();
     };
+
 
     @GetMapping("get/profile/{userId}/{role}")
     public ResponseEntity<?> getUserProfile(@PathVariable Long userId, @PathVariable String role){
@@ -50,6 +52,7 @@ public class UserController {
     
     // /*     * Worker Management APIs
     //  */
+    @PreAuthorize("hasRole('FARMER')")
     @PostMapping("filter/workers/available/{email}")
     public ResponseEntity<List<WorkerProfile>> getActiveWorkers(@PathVariable String email){
         return userService.getActiveWorkers(email);

@@ -33,25 +33,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException, java.io.IOException {
-
-        // --- REMOVE THIS BLOCK ---
-        // String path = request.getRequestURI();
-        // // Skip JWT validation for public routes
-        // if (path.startsWith("/api/auth/") || 
-        //     path.startsWith("/v3/api-docs") ||
-        //     path.startsWith("/swagger-ui")) {
-
-        //     filterChain.doFilter(request, response);
-        //     return;
-        // }
-        // -------------------------
-
-        // ADD: Skip JWT parsing and validation for CORS preflight (OPTIONS) requests.
-        // Spring Security already permits this in the config, but we skip the token logic here for cleanliness.
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
-        }
+            }
 
         try {
             String jwt = parseJwt(request);
