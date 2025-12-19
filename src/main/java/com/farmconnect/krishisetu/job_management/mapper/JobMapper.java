@@ -16,16 +16,17 @@ public interface JobMapper{
     @Mapping(source = "jobWorkerAssignment", target = "jobWorkerAssignmentProfile")
     @Mapping(source = "title", target = "title")
     @Mapping(source = "jobType", target = "jobType")
-    @Mapping(source = "createdAt", target = "createdAt")
-    @Mapping(source = "updatedAt", target = "updatedAt")
     JobProfile toJobModel(Job job);
 
+// @Mapping(source = "createdAt", target = "createdAt")
+//     @Mapping(source = "updatedAt", target = "updatedAt")
 
     @Mapping(source = "jobLocationProfile", target = "jobLocation")
+    @Mapping(target = "jobLocation.location", ignore = true)
     @Mapping(source = "jobWorkerAssignmentProfile", target = "jobWorkerAssignment")
     @Mapping(source = "title", target = "title")
     @Mapping(source = "jobType", target = "jobType")
-    @Mapping(source = "createdAt", target = "createdAt")
-    @Mapping(source = "updatedAt", target = "updatedAt")
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     Job toJobEntity(JobProfile jobProfile);
 }

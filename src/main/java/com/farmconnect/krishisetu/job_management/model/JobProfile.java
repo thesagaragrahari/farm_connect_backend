@@ -17,18 +17,18 @@ import java.util.UUID;
 public class JobProfile {
 
     // --- Job Core Fields ---
-    private UUID jobId;
+    //private UUID jobId;
     private String title;
     private String jobType; // Maps to jobs.job_type_enum in DDL
     private String status;  // Maps to jobs.job_status_enum in DDL
     private String description;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    // private LocalDateTime createdAt;
+    // private LocalDateTime updatedAt;
     
     // --- Related Entity Profiles (Simplified Views) ---
     
     // FK 1: Farmer
-    private FarmerProfile farmerProfile; 
+    //private FarmerProfile farmerProfile; 
     
     // FK 2: Job Location
     private JobLocationProfile jobLocationProfile;

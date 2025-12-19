@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class JobWorkerAssignmentProfile {
     
-    private Integer id;
+    //private Integer id;
     private UUID jobId;
     private Integer workerId;
     private Integer farmerId;

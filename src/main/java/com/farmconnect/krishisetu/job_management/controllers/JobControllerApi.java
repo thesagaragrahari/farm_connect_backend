@@ -22,10 +22,10 @@ public class JobControllerApi {
     };
     /* apis for farmers */
 
-    // @PostMapping("farmer/postjob/{email}")
-    // public ResponseEntity<?> createJob(@PathVariable String email, @RequestBody JobProfile jobProfile){
-    //     return jobService.createJob(email,jobProfile );
-    // }
+    @PostMapping("farmer/postjob")
+    public ResponseEntity<String> createJob(@RequestBody JobProfile jobProfile){
+        return jobService.createJob(jobProfile );
+    }
 
     // @PostMapping("farmer/assign/job/{jobId}/{workerId}/{userType}")
     // public ResponseEntity<JobDetails> assignJobToWorker(@PathVariable Long jobId, @PathVariable Long workerId, @PathVariable String userType){

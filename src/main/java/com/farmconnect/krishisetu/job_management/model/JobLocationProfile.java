@@ -2,6 +2,9 @@ package com.farmconnect.krishisetu.job_management.model;
 
 
 import org.locationtech.jts.geom.Point;
+
+import com.farmconnect.krishisetu.util.PointDTO;
+
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,15 +18,15 @@ import java.util.UUID;
 @Builder
 public class JobLocationProfile {
 
-    private UUID jobLocationId;
+    //private UUID jobLocationId;
 
     // --- Spatial Data Representation ---
     // In a DTO, you typically send simplified coordinates 
     // instead of the complex spatial object itself.
-    private Point location;
+    private PointDTO location;
     
     // Placeholder: If you send the raw spatial string/WKT
-    private String locationWkt; 
+   // private String locationWkt; 
     
     // --- Address Fields ---
     private String address;
