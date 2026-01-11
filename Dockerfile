@@ -1,15 +1,15 @@
-# Use official OpenJDK image
-FROM openjdk:17-jdk-slim
+# build stage (optional if using multi-stage)
+FROM eclipse-temurin:17-jdk AS build
+WORKDIR /app
+COPY . .
+RUN ./mvnw clean package -DskipTests
 
-# Set working directory
+# runtime stage
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 
-# Copy the jar file (replace with your jar name)
-COPY target/krishisetu-0.0.1-SNAPSHOT.jar app.jar
+# copy built jar from builder
+COPY --from=build /app/target/*.jar app.jar
 
-
-# Expose port (same as in application.properties)
 EXPOSE 8080
-
-# Run the jar
 ENTRYPOINT ["java","-jar","app.jar"]
