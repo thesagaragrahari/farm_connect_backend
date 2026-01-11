@@ -2,12 +2,18 @@ package com.farmconnect.krishisetu.users_management.services;
 
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.farmconnect.krishisetu.users_management.entity.Farmer;
@@ -64,48 +70,41 @@ class UserService {
 
     
     private static final Logger logger = LoggerFactory.getLogger(Service.class);
+    //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     
     public String helloUser() {
         return "Hello, User!";
     }
 
 
-    public ResponseEntity<?> getUserProfile(Long userId, String role) {
-        if(role == null || role.isEmpty() || role.isBlank()|| !UserRole.isValid(role)) {
-            return ResponseEntity.badRequest().body("Role cannot be null or empty");
-        }
-        if(userId == null || userId <= 0) {
-            return ResponseEntity.badRequest().body("Invalid user ID");
-        }
+    public ResponseEntity<?> getUserProfile(org.springframework.security.core.userdetails.User springUser) {
+        String email = springUser.getUsername();//it returns email as username
 
-        User user = userRepo.findByUserIdAndRole(userId,role);
+        List<String> roles = springUser.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList());//EXTRACTING ROLES s
 
-        if(user == null) {
-            return ResponseEntity.status(404).body("User not found");
-        }
-        //UserProfile userProfile = Umapper.toUserModel(user);
-
-        if(role.equalsIgnoreCase(UserRole.FARMER.name())) {
-            Farmer farmer = farmerRepo.findByUserUserId(userId);
+        if(roles.contains("ROLE_FARMER") && email != null) {
+            Farmer farmer = farmerRepo.findByUserEmail(email);
             if(farmer == null) {
                 return ResponseEntity.status(404).body("Farmer profile not found");
             }
             FarmerProfile farmerProfile = Fmapper.toFarmerModel(farmer);
-            logger.info("Farmer profile retrieved successfully for userId: " + userId);
+            logger.info("Farmer profile retrieved successfully for user: " + farmer);
             return ResponseEntity.ok(farmerProfile);
-        }else if(role.equalsIgnoreCase(UserRole.WORKER.name())) {
+        }else if(roles.contains("ROLE_WORKER") && email != null) {
             // Similar logic for WorkerProfile
-            Worker worker = workerRepo.findByUserUserId(userId);
+            Worker worker = workerRepo.findByUserEmail(email).orElse(null);
             if(worker == null) {
                 return ResponseEntity.status(404).body("Worker profile not found");
             }   
             WorkerProfile workerProfile = Wmapper.toWorkerModel(worker);
+            logger.info("Worker profile retrieved successfully for user: " + worker);
             return ResponseEntity.ok(workerProfile);
         }
         
-        logger.error("Invalid role specified: " + role);
+        logger.error("Invalid role specified: " + roles);
         return ResponseEntity.status(400).body("Invalid role specified");
-        
     }
 
     // public ResponseEntity<?> updateUserProfile(String email, String role, UserProfileSuperSet request) {
@@ -221,7 +220,7 @@ class UserService {
         }
         email = email.replaceAll("\s+", "").toLowerCase();
 
-        Worker worker = workerRepo.findByUserEmail(email);
+        Worker worker = workerRepo.findByUserEmail(email).orElse(null);
         if(worker == null) {
             return ResponseEntity.status(404).build();
         }
@@ -241,7 +240,7 @@ class UserService {
 
         email = email.replaceAll("\s+", "").toLowerCase();
         status = status.trim().toLowerCase();
-        Worker worker = workerRepo.findByUserEmail(email);
+        Worker worker = workerRepo.findByUserEmail(email).orElse(null);
         if(worker == null) {
             return ResponseEntity.status(404).build();
         }

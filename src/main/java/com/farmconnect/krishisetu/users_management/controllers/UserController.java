@@ -1,19 +1,21 @@
 package com.farmconnect.krishisetu.users_management.controllers;
 
-
+//import org.springframework.security.core.userdetails.User as SpringSecurityUser;
+import com.farmconnect.krishisetu.security.service.UserDetailsServiceImpl;
 import com.farmconnect.krishisetu.users_management.model.SkillProfile;
+import com.farmconnect.krishisetu.users_management.model.UserProfile;
 import com.farmconnect.krishisetu.users_management.model.WorkerProfile;
-import com.farmconnect.krishisetu.users_management.reqres.UserProfileSuperSet;
 import com.farmconnect.krishisetu.users_management.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 
 @RestController
-@RequestMapping("/api/users/")
+@RequestMapping("/users/")
 public class UserController {
 
     @Autowired
@@ -29,9 +31,21 @@ public class UserController {
     };
 
 
-    @GetMapping("get/profile/{userId}/{role}")
-    public ResponseEntity<?> getUserProfile(@PathVariable Long userId, @PathVariable String role){
-        return userService.getUserProfile(userId, role);
+    // @GetMapping("/profile/")
+    // public ResponseEntity<?> getUserProfile(){
+    //     return userService.getUserProfile();
+    // }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal org.springframework.security.core.userdetails.User springUser) {
+        
+        // You now have direct access to all fields defined in your CustomUserDetails
+        // String userId = userDetails.getId();
+        // String username = userDetails.getUsername();
+        
+
+        // Pass the identifier to the service layer to fetch the complete profile
+        return userService.getUserProfile(springUser);
     }
     
     // @PostMapping("/register")

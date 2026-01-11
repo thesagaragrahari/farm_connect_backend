@@ -14,7 +14,7 @@ target/
 .sts4-cache
 
 # Exclude the specific application properties file
-src/main/resources/application.properties
+src/main/resources/application-local.properties
 
 # If you use a different application profile, you might want to exclude that too:
 # src/main/resources/application-dev.properties
