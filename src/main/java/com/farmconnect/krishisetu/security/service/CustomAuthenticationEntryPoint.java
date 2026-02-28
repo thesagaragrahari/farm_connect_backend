@@ -1,13 +1,19 @@
 package com.farmconnect.krishisetu.security.service;
 
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+    private static final Logger logger =
+            LoggerFactory.getLogger(CustomAuthenticationEntryPoint.class);
 
     @Override
     public void commence(
@@ -15,20 +21,21 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             HttpServletResponse response,
             AuthenticationException authException) throws IOException {
 
-        // Log the exception for server-side debugging
-        System.err.println("Unauthorized error: " + authException.getMessage());
-        
-        // 1. Set Response Properties
+        // Proper logging
+        logger.error("Unauthorized error: {}", authException.getMessage());
+
+        // Response settings
         response.setContentType("application/json");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // HTTP 401
-        
-        // 2. Construct the Custom Message
+        response.setCharacterEncoding("UTF-8");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+        // JSON response body
         String message = String.format(
-            "{\"status\": 401, \"error\": \"Unauthorized\", \"path\": \"%s\", \"message\": \"Authentication failed. You must provide valid credentials (e.g., a JWT) to access this resource.\"}",
-            request.getRequestURI()
+                "{ \"timestamp\": \"%s\", \"status\": 401, \"error\": \"Unauthorized\", \"path\": \"%s\", \"message\": \"Authentication failed. Provide a valid JWT token.\" }",
+                LocalDateTime.now(),
+                request.getRequestURI()
         );
 
-        // 3. Write the message to the response
         response.getWriter().write(message);
     }
 }

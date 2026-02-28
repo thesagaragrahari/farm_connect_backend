@@ -1,21 +1,27 @@
 package com.farmconnect.krishisetu.users_management.controllers;
 
-//import org.springframework.security.core.userdetails.User as SpringSecurityUser;
-import com.farmconnect.krishisetu.security.service.UserDetailsServiceImpl;
+import com.farmconnect.krishisetu.users_management.model.FarmerProfile;
 import com.farmconnect.krishisetu.users_management.model.SkillProfile;
 import com.farmconnect.krishisetu.users_management.model.UserProfile;
 import com.farmconnect.krishisetu.users_management.model.WorkerProfile;
 import com.farmconnect.krishisetu.users_management.services.UserService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import static com.farmconnect.krishisetu.CommonUtility.Models.Routes.FARMER;
+import static com.farmconnect.krishisetu.CommonUtility.Models.Routes.USER;
+
 import java.util.List;
 
 
+
+
 @RestController
-@RequestMapping("/users/")
+@RequestMapping("/api")
 public class UserController {
 
     @Autowired
@@ -30,46 +36,45 @@ public class UserController {
         return userService.helloUser();
     };
 
-
-    // @GetMapping("/profile/")
-    // public ResponseEntity<?> getUserProfile(){
-    //     return userService.getUserProfile();
-    // }
-
+    @PreAuthorize("isAuthenticated()")  
     @GetMapping("/profile")
     public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal org.springframework.security.core.userdetails.User springUser) {
-        
-        // You now have direct access to all fields defined in your CustomUserDetails
-        // String userId = userDetails.getId();
-        // String username = userDetails.getUsername();
-        
-
-        // Pass the identifier to the service layer to fetch the complete profile
         return userService.getUserProfile(springUser);
     }
+
+    @PreAuthorize("isAuthenticated()")  
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateMyProfile(@AuthenticationPrincipal org.springframework.security.core.userdetails.User springUser,@RequestBody UserProfile uProfile) {
+        return userService.updateUserProfile(springUser,uProfile);
+    }
+
+    @PreAuthorize("isAuthenticated()")  // change pass for authenticated user
+    @PutMapping(USER+"/password")
+    public ResponseEntity<String> updatePassword(@AuthenticationPrincipal org.springframework.security.core.userdetails.User springUser,@RequestBody String newPassword) {
+        return userService.updatePassword(springUser,newPassword);
+    }
+
+
+
+
+
+    /* farmer management apis */
+    @PreAuthorize("hasRole('FARMER')")
+    @PutMapping(FARMER+"/profile/")
+    public ResponseEntity<?> updateFarmerProfile(@AuthenticationPrincipal org.springframework.security.core.userdetails.User springUser,
+                                                 @RequestBody FarmerProfile updatedProfile) {
+        return userService.updateFarmerProfile(springUser, updatedProfile);
+    }
     
-    // @PostMapping("/register")
-    // public ResponseEntity<?> registerUser(@RequestBody UserProfile request){
-    //     return userService.registerUser(request);
-    // }
-
-    // @PostMapping("/login")
-    // public ResponseEntity<?> loginUser(@RequestBody ){
-    //     return userService.loginUser(request); 
-    // }
-
-    // @PostMapping("/update/profile/{email}/{role}")
-    // public ResponseEntity<?> updateUserProfile(@PathVariable String email, @PathVariable String role, @RequestBody UserProfileSuperSet request){
-    //     return userService.updateUserProfile(email, role, request);
-    // }
+    
 
     
     // /*     * Worker Management APIs
     //  */
     @PreAuthorize("hasRole('FARMER')")
-    @PostMapping("filter/workers/available/{email}")
-    public ResponseEntity<List<WorkerProfile>> getActiveWorkers(@PathVariable String email){
-        return userService.getActiveWorkers(email);
+    @PostMapping("filter/workers/available")
+    public ResponseEntity<List<WorkerProfile>> getActiveWorkers(){
+        return userService.getActiveWorkers();
     }
 
     // @PostMapping("/workers/by/location/{radius}")
@@ -78,25 +83,25 @@ public class UserController {
     // }
 
    
-    @PostMapping("filter/workers/jobtype/{email}/{jobType}")
-    public ResponseEntity<List<WorkerProfile>> getWorkersByJobType(@PathVariable String email,@PathVariable String jobType){
+    @PostMapping("filter/workers/jobtype/{jobType}")
+    public ResponseEntity<List<WorkerProfile>> getWorkersByJobType(@PathVariable String jobType){
         return userService.getWorkersByJobType(jobType);
     }
 
 
-    @PostMapping("filter/workers/byskills/{email}")
-    public ResponseEntity<List<WorkerProfile>> getWorkersBySkills(@PathVariable String email,@RequestBody List<String> skillReq){
-        return userService.getWorkersBySkills(email, skillReq);
+    @PostMapping("filter/workers/byskills")
+    public ResponseEntity<List<WorkerProfile>> getWorkersBySkills(@RequestBody List<String> skillReq){
+        return userService.getWorkersBySkills(skillReq);
     }
 
-    @GetMapping("get/worker/skills/{email}")
-    public ResponseEntity<List<SkillProfile>> getWorkersSkills(@PathVariable String email){
-        return userService.getWorkersSkills(email);
+    @GetMapping("get/worker/skills")
+    public ResponseEntity<List<SkillProfile>> getWorkersSkills(@AuthenticationPrincipal org.springframework.security.core.userdetails.User springUser){
+        return userService.getWorkersSkills(springUser.getUsername());
     }
 
-    @PostMapping("update/worker/status/{email}/{status}")
-    public ResponseEntity<WorkerProfile> updateWorkerStatus(@PathVariable String email, @PathVariable String status){
-        return userService.updateWorkerStatus(email,status);
+    @PostMapping("update/worker/status/{status}")
+    public ResponseEntity<WorkerProfile> updateWorkerStatus(@AuthenticationPrincipal org.springframework.security.core.userdetails.User springUser, @PathVariable String status){
+        return userService.updateWorkerStatus(springUser.getUsername(),status);
     }
 
     

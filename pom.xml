@@ -89,6 +89,24 @@
     		<scope>provided</scope>
 		</dependency>
 
+        <!-- SPRING EMAIL Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+         <!-- SHA256 related -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.16.0</version>
+        </dependency>
+        <!-- Kafka -->
+    <dependency>
+        <groupId>org.springframework.kafka</groupId>
+        <artifactId>spring-kafka</artifactId>
+    </dependency>
+
         <!-- FOR ENUM JSON SUPPORT (OPTIONAL BUT USEFUL) -->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>

@@ -3,7 +3,7 @@ package com.farmconnect.krishisetu.job_management.model;
 
 import org.locationtech.jts.geom.Point;
 
-import com.farmconnect.krishisetu.util.PointDTO;
+import com.farmconnect.krishisetu.CommonUtility.Models.PointDTO;
 
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;

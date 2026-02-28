@@ -14,6 +14,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.farmconnect.krishisetu.users_management.entity.Farmer;
@@ -35,6 +36,7 @@ import com.farmconnect.krishisetu.users_management.repo.SkillRepo;
 import com.farmconnect.krishisetu.users_management.repo.UserRepo;
 import com.farmconnect.krishisetu.users_management.repo.WorkerRepo;
 import com.farmconnect.krishisetu.users_management.reqres.UserProfileSuperSet;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
@@ -43,6 +45,9 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 @Service
 public
 class UserService {
+
+
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     UserRepo userRepo;
@@ -147,18 +152,28 @@ class UserService {
     //     return ResponseEntity.badRequest().body("Invalid role specified");
     // }
 
+    public ResponseEntity<String> updatePassword(org.springframework.security.core.userdetails.User springUser, String newPassword) {
+        // TODO Auto-generated method stub
+        User user = userRepo.findByEmail(springUser.getUsername()).orElse(null);
+        if(user == null || user.getEmail() == null || user.getEmail().isEmpty() || user.getEmail().isBlank() 
+            || newPassword == null || newPassword.isEmpty() || newPassword.isBlank()) {
+            return ResponseEntity.status(404).body("User not found or invalid new password");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepo.save(user);
+        return ResponseEntity.status(200).body("Password updated successfully");
+    }
+
+
 
 
 
     // get workers by skills
-    public ResponseEntity<List<WorkerProfile>> getWorkersBySkills(String email,List<String> skillReq) {
-        if(email == null || email.isEmpty() || email.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<List<WorkerProfile>> getWorkersBySkills(List<String> skillReq) {
         if(skillReq == null || skillReq.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-        //validate skills
+        
         List<Skill> validSkills = skillRepo.findBySkillNameIn(skillReq);
         if(validSkills == null || validSkills.isEmpty()) {
             return ResponseEntity.badRequest().build();
@@ -196,12 +211,7 @@ class UserService {
     }
 
 
-    public ResponseEntity<List<WorkerProfile>> getActiveWorkers(String email) {
-        if(email == null || email.isEmpty() || email.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
-        email = email.replaceAll("\s+", "").toLowerCase();
-
+    public ResponseEntity<List<WorkerProfile>> getActiveWorkers() {
         List<Worker> workers = workerRepo.findByStatus(UserStatus.AVAILABLE.name().toLowerCase());
         if(workers == null || workers.isEmpty()) {
             return ResponseEntity.status(404).build();
@@ -248,6 +258,30 @@ class UserService {
         workerRepo.save(worker);
         WorkerProfile workerProfile = Wmapper.toWorkerModel(worker);
         return ResponseEntity.ok(workerProfile);
+    }
+
+
+    public ResponseEntity<?> updateFarmerProfile(org.springframework.security.core.userdetails.User springUser,
+            FarmerProfile updatedProfile) {
+            FarmerProfile existingProfile = farmerRepo.findByUserEmail(springUser.getUsername()).orElse(null);
+            if(existingProfile == null) {
+                return ResponseEntity.status(404).body("Farmer profile not found");
+            }
+
+            // // Update fields
+            // Fmapper.updateFarmerEntityFromModel(updatedProfile, existingProfile);
+            // farmerRepo.save(existingProfile);
+            // FarmerProfile savedProfile = Fmapper.toFarmerModel(existingProfile);
+            //return ResponseEntity.ok(savedProfile);
+        throw new UnsupportedOperationException("Unimplemented method 'updateFarmerProfile'");
+    }
+
+
+    public ResponseEntity<?> updateUserProfile(org.springframework.security.core.userdetails.User springUser,
+        UserProfile uProfile) {
+        User existingUser = userRepo.findByEmail(springUser.getUsername()).orElse(null);
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateUserProfile'");
     }
 
 

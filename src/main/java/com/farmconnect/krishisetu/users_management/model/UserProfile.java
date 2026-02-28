@@ -2,9 +2,7 @@ package com.farmconnect.krishisetu.users_management.model;
 
 import java.time.LocalDateTime;
 
-//import org.locationtech.jts.geom.Point;
-
-import com.farmconnect.krishisetu.util.PointDTO;
+import com.farmconnect.krishisetu.CommonUtility.Models.PointDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

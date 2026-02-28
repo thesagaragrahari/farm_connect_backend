@@ -5,6 +5,8 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.farmconnect.krishisetu.users_management.model.FarmerProfile;
+
 @Entity
 @Table(name = "farmers", schema = "users")
 @Data
@@ -26,5 +28,11 @@ public class Farmer {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
     private User user;
+
+
+    public FarmerProfile orElse(Object object) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'orElse'");
+    }
 
 }

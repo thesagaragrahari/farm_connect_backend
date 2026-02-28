@@ -1,8 +1,5 @@
 package com.farmconnect.krishisetu.security.jwt;
 
-// com.farmconnect.krishisetu.security.jwt.AuthTokenFilter
-
-// ... existing imports ...
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,6 +30,16 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException, java.io.IOException {
+            String path = request.getServletPath();
+
+            if (path.startsWith("/api/auth")) {
+                filterChain.doFilter(request, response);
+            return;
+            }
+
+
+
+
             if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;

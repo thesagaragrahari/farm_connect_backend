@@ -1,4 +1,4 @@
-package com.farmconnect.krishisetu.util;
+package com.farmconnect.krishisetu.CommonUtility.Models;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

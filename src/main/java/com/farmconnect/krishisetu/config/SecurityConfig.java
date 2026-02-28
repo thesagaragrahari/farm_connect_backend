@@ -19,7 +19,6 @@ import com.farmconnect.krishisetu.security.jwt.AuthTokenFilter;
 import com.farmconnect.krishisetu.security.service.CustomAccessDeniedHandler;
 import com.farmconnect.krishisetu.security.service.CustomAuthenticationEntryPoint;
 
-// ... other imports ...
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;

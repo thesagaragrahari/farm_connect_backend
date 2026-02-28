@@ -2,6 +2,7 @@ package com.farmconnect.krishisetu.job_management.services;
 
 
 
+import com.farmconnect.krishisetu.CommonUtility.Models.PointDTO;
 import com.farmconnect.krishisetu.config.GeometryConfig;
 import java.util.Optional;
 
@@ -21,7 +22,6 @@ import com.farmconnect.krishisetu.job_management.repo.JobRepo;
 import com.farmconnect.krishisetu.users_management.entity.User;
 import com.farmconnect.krishisetu.users_management.enums.UserRole;
 import com.farmconnect.krishisetu.users_management.repo.UserRepo;
-import com.farmconnect.krishisetu.util.PointDTO;
 
 @Service
 public
