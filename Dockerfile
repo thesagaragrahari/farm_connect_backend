@@ -7,8 +7,7 @@ RUN ./mvnw clean package -DskipTests
 # -------- runtime stage --------
 FROM eclipse-temurin:17-jre
 
-# 
-THIS LINE FIXES YOUR PROBLEM
+# Install CA certificates (needed for TLS DB/Kafka/SMTP connections)
 RUN apt-get update && apt-get install -y ca-certificates && update-ca-certificates
 
 WORKDIR /app

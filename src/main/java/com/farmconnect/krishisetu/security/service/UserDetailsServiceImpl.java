@@ -1,9 +1,9 @@
 package com.farmconnect.krishisetu.security.service;
 
-import com.farmconnect.krishisetu.users_management.entity.User;
-import com.farmconnect.krishisetu.users_management.repo.UserRepo;
-import com.farmconnect.krishisetu.CommonUtility.Entities.UserSecurityState;
-import com.farmconnect.krishisetu.CommonUtility.Repos.UserSecurityStateRepository;
+import com.farmconnect.krishisetu.modules.auth_service.entities.UserSecurityState;
+import com.farmconnect.krishisetu.modules.auth_service.repositories.UserSecurityStateRepository;
+import com.farmconnect.krishisetu.modules.user_service.entity.User;
+import com.farmconnect.krishisetu.modules.user_service.repo.UserRepo;
 
 import java.util.List;
 
