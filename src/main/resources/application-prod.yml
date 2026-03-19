@@ -1,4 +1,6 @@
 spring:
+  main:
+    lazy-initialization: true
   application:
     name: krishisetu
 
@@ -12,7 +14,9 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: ${JPA_SHOW_SQL:false}
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:update}
+    #  ddl-auto: ${JPA_DDL_AUTO:update}
+      ddl-auto: none
+    open-in-view: false
     properties:
       hibernate:
         jdbc:
@@ -34,6 +38,8 @@ spring:
           writetimeout: ${MAIL_SMTP_WRITE_TIMEOUT:5000}
 
   kafka:
+    admin:
+      fail-fast: false
     listener:
       missing-topics-fatal: false
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
