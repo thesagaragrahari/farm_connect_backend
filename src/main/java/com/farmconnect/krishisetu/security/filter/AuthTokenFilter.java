@@ -22,6 +22,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
+    private static final org.slf4j.Logger logger =
+            org.slf4j.LoggerFactory.getLogger(AuthTokenFilter.class);
 
     public AuthTokenFilter(JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService) {
         this.jwtUtil = jwtUtil;
@@ -35,16 +37,19 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getServletPath();
-
+        logger.info("Processing authentication for path: {}", path);
         // Skip authentication for public endpoints
         if (path.startsWith("/api/auth")
-                || path.startsWith("/api/public")
-                || path.startsWith("/swagger-ui")
-                || path.startsWith("/v3/api-docs")
-                || path.equals("/error")) {
+            || path.startsWith("/api/public")
+            || path.startsWith("/swagger-ui")
+            || path.startsWith("/v3/api-docs")
+            || path.startsWith("/actuator")
+            || path.equals("/")
+            || path.equals("/error")
+            || path.equals("/favicon.ico")) {
 
             filterChain.doFilter(request, response);
-            return;
+        return;
         }
 
         // Allow preflight CORS requests
@@ -79,7 +84,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
         } catch (Exception e) {
             // Log error if needed but do not stop filter chain
-            System.out.println("JWT authentication error: " + e.getMessage());
+            logger.error("JWT authentication error:", e);
         }
 
         filterChain.doFilter(request, response);

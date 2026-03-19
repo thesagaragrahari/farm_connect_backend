@@ -42,16 +42,19 @@ public class SecurityFilterConfig {
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/auth/**",
-                        "/api/public/**",
-                        "/actuator/health",
-                        "/actuator/info",
-                        "/swagger-ui/**",
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html").permitAll()
-                        .anyRequest().authenticated());
+                .requestMatchers(
+                    "/",
+                    "/favicon.ico",
+                    "/error",
+                    "/api/auth/**",
+                    "/api/public/**",
+                    "/actuator/**",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui.html"
+            ).permitAll()
+        .anyRequest().authenticated()
+        );
         
         http.addFilterBefore(authTokenFilter,
                 UsernamePasswordAuthenticationFilter.class);
