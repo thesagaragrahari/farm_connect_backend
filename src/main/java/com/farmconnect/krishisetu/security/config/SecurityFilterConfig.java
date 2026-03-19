@@ -49,6 +49,7 @@ public class SecurityFilterConfig {
                         "/actuator/info",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
+                        "/swagger-ui/**",
                         "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated());
         

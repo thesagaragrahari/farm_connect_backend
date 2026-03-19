@@ -1,0 +1,7 @@
+target/*
+!target/krishisetu.jar
+
+.git
+.gitignore
+.env
+node_modules

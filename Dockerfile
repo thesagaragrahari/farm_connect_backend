@@ -1,9 +1,9 @@
-FROM eclipse-temurin:17-jdk
+FROM openjdk:17-jdk-slim
 
 WORKDIR /app
 
-COPY . .
+COPY target/krishisetu.jar app.jar
 
-RUN ./mvnw clean package -DskipTests
+EXPOSE 8080
 
-CMD ["java","-jar","target/krishisetu-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
