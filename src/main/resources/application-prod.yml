@@ -81,6 +81,12 @@ app:
     reset-password-url: ${APP_FRONTEND_RESET_PASSWORD_URL}
 
 management:
+  health:
+    defaults:
+      enabled: true
+  endpoint:
+    health:
+      show-details: always
   endpoints:
     web:
       exposure:
