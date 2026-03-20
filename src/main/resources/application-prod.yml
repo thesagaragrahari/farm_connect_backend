@@ -6,7 +6,7 @@ spring:
     name: ${SPRING_APPLICATION_NAME:krishisetu}
 
   datasource:
-    url: ${DB_URL}
+    url: ${DB_URL}?sslmode=verify-full&sslrootcert=${SUPABASE_SSL_CERT}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
