@@ -1,6 +1,9 @@
 package com.farmconnect.krishisetu.modules.user_service.entity;
 
 import org.locationtech.jts.geom.Point;
+
+import com.farmconnect.krishisetu.modules.user_service.enums.UserRole;
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -27,6 +30,9 @@ public class User {
     @Column(name = "phone", length = 15)
     private String phone;
 
+    // @Enumerated(EnumType.STRING)
+    // @Column(nullable = false)
+    // private UserRole role;
     @Column(name = "role", nullable = false, length = 20)
     private String role;
 
@@ -49,11 +55,6 @@ public class User {
 
     @Column(name = "password")
     private String password;
-
-    public User orElseThrow(Object object) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
-    }
 
 }
 

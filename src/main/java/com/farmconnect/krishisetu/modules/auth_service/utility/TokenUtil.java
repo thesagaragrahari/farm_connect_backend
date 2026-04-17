@@ -1,4 +1,4 @@
-package com.farmconnect.krishisetu.modules.auth_service.models;
+package com.farmconnect.krishisetu.modules.auth_service.utility;
 
 
 import java.security.SecureRandom;

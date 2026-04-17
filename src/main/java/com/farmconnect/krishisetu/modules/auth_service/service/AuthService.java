@@ -5,11 +5,10 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
 import org.springframework.http.ResponseEntity;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
@@ -20,29 +19,23 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.farmconnect.krishisetu.common.event.user.UserEvent;
+import com.farmconnect.krishisetu.common.event.user.UserEventType;
+import com.farmconnect.krishisetu.common.kafka.EventPublisher;
+import com.farmconnect.krishisetu.common.kafka.KafkaTopics;
+import com.farmconnect.krishisetu.modules.auth_service.DTOs.LoginReq;
+import com.farmconnect.krishisetu.modules.auth_service.DTOs.RegisterReq;
 import com.farmconnect.krishisetu.modules.auth_service.entities.UserActionToken;
 import com.farmconnect.krishisetu.modules.auth_service.entities.UserSecurityState;
 import com.farmconnect.krishisetu.modules.auth_service.models.TokenType;
-import com.farmconnect.krishisetu.modules.auth_service.models.TokenUtil;
 import com.farmconnect.krishisetu.modules.auth_service.repositories.UserActionTokenRepository;
 import com.farmconnect.krishisetu.modules.auth_service.repositories.UserSecurityStateRepository;
-import com.farmconnect.krishisetu.modules.notification_service.event.NotificationEvent;
-import com.farmconnect.krishisetu.modules.notification_service.models.NotificationType;
-import com.farmconnect.krishisetu.modules.notification_service.producer.NotificationEventProducer;
-import com.farmconnect.krishisetu.modules.user_service.DTOs.LoginReq;
-import com.farmconnect.krishisetu.modules.user_service.entity.Farmer;
+import com.farmconnect.krishisetu.modules.auth_service.utility.AuthServiceUtil;
+import com.farmconnect.krishisetu.modules.auth_service.utility.TokenUtil;
 import com.farmconnect.krishisetu.modules.user_service.entity.User;
-import com.farmconnect.krishisetu.modules.user_service.entity.Worker;
-import com.farmconnect.krishisetu.modules.user_service.mapper.FarmerMapper;
 import com.farmconnect.krishisetu.modules.user_service.mapper.UserMapper;
-import com.farmconnect.krishisetu.modules.user_service.mapper.WorkerMapper;
-import com.farmconnect.krishisetu.modules.user_service.model.FarmerProfile;
-import com.farmconnect.krishisetu.modules.user_service.model.PointDTO;
 import com.farmconnect.krishisetu.modules.user_service.model.UserProfile;
-import com.farmconnect.krishisetu.modules.user_service.model.WorkerProfile;
-import com.farmconnect.krishisetu.modules.user_service.repo.FarmerRepo;
 import com.farmconnect.krishisetu.modules.user_service.repo.UserRepo;
-import com.farmconnect.krishisetu.modules.user_service.repo.WorkerRepo;
 import com.farmconnect.krishisetu.security.jwt.JwtUtil;
 
 import jakarta.transaction.Transactional;
@@ -57,110 +50,76 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
-    private final GeometryFactory geometryFactory;
-
     private final UserRepo userRepo;
-    private final WorkerRepo workerRepo;
-    private final FarmerRepo farmerRepo;
-
     private final UserMapper userMapper;
-    private final WorkerMapper workerMapper;
-    private final FarmerMapper farmerMapper;
-
     private final TokenUtil tokenUtil;
     private final ForgotPasswordRateLimiter rateLimiter;
-    private final NotificationEventProducer notificationEventProducer;
-
     private final UserActionTokenRepository tokenRepo;
     private final UserSecurityStateRepository securityStateRepo;
 
-    @Value("${app.backend.base-url:http://localhost:8080}")
-    private String backendBaseUrl;
+    @Autowired
+    AuthServiceUtil serviceUtil;
+    @Autowired
+    EventPublisher eventPublisher;
 
-    @Value("${app.frontend.reset-password-url:http://localhost:3000/reset-password}")
-    private String resetPasswordBaseUrl;
+    KafkaTemplate<String, Object> kafkaTemplate;
+   
 
     /* =========================================================
                         REGISTER USER (ONLY BASE USER)
        ========================================================= */
 
     @Transactional
-    public ResponseEntity<String> registerUser(UserProfile profile) {
+    public ResponseEntity<String> registerUser(RegisterReq registerReq) {
 
-        if (userRepo.existsByEmail(profile.getEmail()))
-            return ResponseEntity.status(409).body("Email already registered");
+        if (userRepo.existsByEmail(registerReq.getEmail()))
+            return ResponseEntity.status(409).body("Email already registered Kindly login or use another email");
+        UserProfile userProfile = new UserProfile();
+        userProfile.setFullName(registerReq.getName());
+        userProfile.setEmail(registerReq.getEmail());
+        userProfile.setRole(registerReq.getRole());
+        userProfile.setPhone(null); // phone is optional and can be set later
+        userProfile.setCreatedAt(LocalDateTime.now());
+        userProfile.setUpdatedAt(null);
+        User user = userMapper.toUserEntity(userProfile);
+        user.setPassword(passwordEncoder.encode(registerReq.getPassword()));
 
-        User user = userMapper.toUserEntity(profile);
-        user.setPassword(passwordEncoder.encode(profile.getPassword()));
 
-        if (profile.getLocation() != null) {
-            PointDTO dto = profile.getLocation();
+        //kafkaTemplate.send("user.events", "test message");
+        logger.info("Registering user with email: {}", registerReq.getEmail());
+        /* 
+        if (userProfile.getLocation() != null) {
+            PointDTO dto = userProfile.getLocation();
             Point point = geometryFactory.createPoint(
                     new Coordinate(dto.getLongitude(), dto.getLatitude()));
             point.setSRID(4326);
             user.setLocation(point);
-        }
-
+        } */
         userRepo.save(user);
+        serviceUtil.initSecurity(user.getUserId());
 
-        initSecurity(user);
+        String token = serviceUtil.createActionToken(user.getUserId(), TokenType.REGISTRATION);
+        
+        UserEvent event = UserEvent.builder().eventType(UserEventType.REGISTERED_AND_VERIFIED)
+                        .email(user.getEmail())
+                        .name(user.getFullName())
+                        .role(user.getRole().toString())
+                        .userId(user.getUserId())
+                        .token(token)
+                        .build();
 
-        sendActionToken(user, TokenType.EMAIL_VERIFICATION);
-        publishWelcomeMail(user);
-
+        logger.info("Publishing user registration event for email: {}", registerReq.getEmail());
+        eventPublisher.publish(
+                KafkaTopics.USER_EVENTS,
+                event
+        );
+        
+        logger.info("Published user registration event for email: {}", registerReq.getEmail());
+        //publishWelcomeMail(user);
         return ResponseEntity.ok("Registered successfully. Verify email.");
     }
 
-    /* =========================================================
-                        COMPLETE WORKER PROFILE
-       ========================================================= */
-
-    @Transactional
-    public ResponseEntity<String> completeWorkerProfile(
-            WorkerProfile workerProfile) {
-
-        User user = getVerifiedUser(workerProfile.getUserProfile().getEmail());
-
-        if (!"worker".equalsIgnoreCase(user.getRole()))
-            return ResponseEntity.badRequest().body("Invalid role");
-
-        if (workerRepo.existsByUser(user))
-            return ResponseEntity.badRequest().body("Profile already completed");
-
-        Worker worker = workerMapper.toWorkerEntity(workerProfile);
-        worker.setUser(user);
-        workerRepo.save(worker);
-
-        markProfileCompleted(user.getUserId());
-
-        return ResponseEntity.ok("Worker profile completed");
-    }
-
-    /* =========================================================
-                        COMPLETE FARMER PROFILE
-       ========================================================= */
-
-    @Transactional
-    public ResponseEntity<String> completeFarmerProfile(
-            FarmerProfile farmerProfile) {
-
-        User user = getVerifiedUser(farmerProfile.getUserProfile().getEmail());
-
-        if (!"farmer".equalsIgnoreCase(user.getRole()))
-            return ResponseEntity.badRequest().body("Invalid role");
-
-        if (farmerRepo.existsByUser(user))
-            return ResponseEntity.badRequest().body("Profile already completed");
-
-        Farmer farmer = farmerMapper.toFarmerEntity(farmerProfile);
-        farmer.setUser(user);
-        farmerRepo.save(farmer);
-
-        markProfileCompleted(user.getUserId());
-
-        return ResponseEntity.ok("Farmer profile completed");
-    }
-
+    
     /* =========================================================
                             LOGIN
        ========================================================= */
@@ -175,8 +134,22 @@ public class AuthService {
                     securityStateRepo.findByUserId(user.getUserId())
                             .orElseThrow();
 
+                
                 if (!state.isEmailVerified()){
-                        sendActionToken(user, TokenType.EMAIL_VERIFICATION);
+                        UserEvent event = UserEvent.builder().eventType(UserEventType.EMAIL_VERIFICATION)
+                        .email(user.getEmail())
+                        .name(user.getFullName())
+                        .role(user.getRole().toString())
+                        .userId(user.getUserId())
+                        .token(serviceUtil.createActionToken(user.getUserId(), TokenType.EMAIL_VERIFICATION))
+                        .build();
+
+                        logger.info("Login failed sent email for user email verification event for email: {}", user.getEmail());
+                        eventPublisher.publish(
+                        "user.events",
+                        event
+                        );
+                       // serviceUtil.sendActionToken(user, TokenType.EMAIL_VERIFICATION);
                 return ResponseEntity.status(401)
                         .body("Email not verified Please verify your email. A new verification link has been sent.");
                 }
@@ -221,13 +194,44 @@ public class AuthService {
 
     @Transactional
     public void forgotPassword(String email) {
+        try{
+                rateLimiter.validate(email);
 
-        rateLimiter.validate(email);
+                if(userRepo.existsByEmail(email)){
+                        User user = userRepo.findByEmail(email).orElseThrow();
+                        UserEvent event = UserEvent.builder().eventType(UserEventType.PASSWORD_RESET)
+                                        .email(user.getEmail())
+                                        .name(user.getFullName())
+                                        .role(user.getRole().toString())
+                                        .userId(user.getUserId())
+                                        .token(serviceUtil.createActionToken(user.getUserId(), TokenType.PASSWORD_RESET))
+                                        .build();
 
-        userRepo.findByEmail(email)
-                .ifPresent(user ->
-                        sendActionToken(user, TokenType.PASSWORD_RESET)
-                );
+                        logger.info("Publishing password reset event for email: {}", email);
+                        eventPublisher.publish(
+                                KafkaTopics.USER_EVENTS,
+                                event
+                        );
+                        logger.info("Published password reset event for email: {}", email);
+                }
+                // userRepo.findByEmail(email)
+                //         .ifPresent(user ->
+                //                 serviceUtil.createActionToken(user.getUserId(), TokenType.PASSWORD_RESET)
+                //                 UserEvent event = UserEvent.builder().eventType(UserEventType.PASSWORDRESET)
+                //                                 .email(user.getEmail())
+                //                                 .name(user.getFullName())
+                //                                 .role(user.getRole().toString())
+                //                                 .userId(user.getUserId())
+                //                                 .token(serviceUtil.createActionToken(user.getUserId(), TokenType.PASSWORD_RESET))
+                //                                 .build();
+                //         );
+        }
+        catch (RuntimeException e){
+            // To prevent email enumeration we will not reveal if the email is registered or not
+            logger.warn("Forgot password attempt for email: {} - {}", email, e.getMessage());
+             // Optionally, you can publish an event for monitoring purposes
+        }
+        
     }
 
     /* =========================================================
@@ -245,14 +249,30 @@ public class AuthService {
                         TokenType.PASSWORD_RESET
                 ).orElseThrow(() -> new RuntimeException("Invalid token"));
 
-        validateToken(token);
+        serviceUtil.validateToken(token);
 
-        User user = token.getUser();
+        User user = userRepo.findByUserId(token.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepo.save(user);
 
+
         token.setUsed(true);
         tokenRepo.save(token);
+        UserEvent event = UserEvent.builder().eventType(UserEventType.PASSWORD_CHANGED)
+                                        .email(user.getEmail())
+                                        .name(user.getFullName())
+                                        .role(user.getRole().toString())
+                                        .userId(user.getUserId())
+                                        //.token(serviceUtil.createActionToken(user.getUserId(), TokenType.PASSWORD_RESET))
+                                        .build();
+
+                        logger.info("Password changed successfully: {}", user.getEmail());
+                        eventPublisher.publish(
+                                KafkaTopics.USER_EVENTS,
+                                event
+                        );
     }
 
     /* =========================================================
@@ -270,11 +290,11 @@ public class AuthService {
                         TokenType.EMAIL_VERIFICATION
                 ).orElseThrow(() -> new RuntimeException("Invalid token"));
 
-        validateToken(token);
+        serviceUtil.validateToken(token);
 
         UserSecurityState state =
                 securityStateRepo.findByUserId(
-                        token.getUser().getUserId()
+                        token.getUserId()
                 ).orElseThrow();
 
         state.setEmailVerified(true);
@@ -282,115 +302,14 @@ public class AuthService {
 
         token.setUsed(true);
         tokenRepo.save(token);
-    }
-
-    /* =========================================================
-                    INTERNAL HELPERS
-       ========================================================= */
-
-    private void initSecurity(User user) {
-
-        UserSecurityState state = new UserSecurityState();
-        state.setUserId(user.getUserId());
-        state.setEmailVerified(false);
-        state.setAccountLocked(false);
-        state.setProfileCompleted(false);
-        state.setTokenVersion(0);
-
-        securityStateRepo.save(state);
-    }
-
-    private User getVerifiedUser(String email) {
-        User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        UserSecurityState state =
-                securityStateRepo.findByUserId(user.getUserId())
-                        .orElseThrow();
-
-        if (!state.isEmailVerified())
-            throw new RuntimeException("Email not verified");
-
-        return user;
-    }
-
-    private void markProfileCompleted(Long userId) {
-        UserSecurityState state =
-                securityStateRepo.findByUserId(userId)
-                        .orElseThrow();
-        state.setProfileCompleted(true);
-        securityStateRepo.save(state);
-    }
-
-    private void validateToken(UserActionToken token) {
-
-        if (token.isUsed())
-            throw new RuntimeException("Token already used");
-
-        if (token.getExpiryTime()
-                .isBefore(LocalDateTime.now()))
-            throw new RuntimeException("Token expired");
-    }
-
-    private void sendActionToken(User user, TokenType type) {
-
-        String raw = tokenUtil.generateRawToken();
-
-        UserActionToken token = new UserActionToken();
-        token.setUser(user);
-        token.setTokenHash(tokenUtil.hashToken(raw));
-        token.setTokenType(type);
-        token.setUsed(false);
-        token.setExpiryTime(LocalDateTime.now().plusMinutes(15));
-
-        tokenRepo.save(token);
-
-        logger.info("Generated {} token for {}",
-                type, user.getEmail());
-        publishActionTokenNotification(user, type, raw);
-    }
-
-    private void publishActionTokenNotification(User user, TokenType type, String rawToken) {
-        NotificationEvent event = new NotificationEvent();
-        event.setRecipient(user.getEmail());
-
-        switch (type) {
-            case EMAIL_VERIFICATION -> {
-                event.setType(NotificationType.EMAIL_VERIFICATION);
-                event.setMetadata(
-                        Map.of(
-                                "verificationLink",
-                                backendBaseUrl + "/api/auth/verify-email?token=" + rawToken
-                        )
-                );
-            }
-            case PASSWORD_RESET -> {
-                event.setType(NotificationType.PASSWORD_RESET);
-                event.setMetadata(
-                        Map.of(
-                                "resetLink",
-                                resetPasswordBaseUrl + "?token=" + rawToken
-                        )
-                );
-            }
-            default -> {
-                logger.warn("No notification mapping for token type {}", type);
-                return;
-            }
-        }
-
-        notificationEventProducer.publish(event);
-    }
-
-    private void publishWelcomeMail(User user) {
-        NotificationEvent event = new NotificationEvent();
-        event.setRecipient(user.getEmail());
-        event.setType(NotificationType.WELCOME_EMAIL);
-        event.setMetadata(
-                Map.of(
-                        "name",
-                        user.getFullName() == null ? "User" : user.getFullName()
-                )
+        eventPublisher.publish(
+                KafkaTopics.USER_EVENTS,
+                UserEvent.builder()
+                        .eventType(UserEventType.EMAIL_VERIFIED)
+                        .email(userRepo.findByUserId(token.getUserId()).orElseThrow().getEmail())
+                        .userId(token.getUserId())
+                        .build()
         );
-        notificationEventProducer.publish(event);
     }
+
 }

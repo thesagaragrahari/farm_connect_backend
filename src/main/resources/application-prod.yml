@@ -54,6 +54,7 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
     consumer:
+      group-id: ${KAFKA_GROUP_ID:default-group}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       auto-offset-reset: ${KAFKA_AUTO_OFFSET_RESET:earliest}
@@ -65,6 +66,14 @@ spring:
       sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
       sasl.jaas.config: ${KAFKA_SASL_JAAS_CONFIG}
       ssl.endpoint.identification.algorithm: https
+
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+
 
 server:
   port: ${PORT:8080}
@@ -83,6 +92,8 @@ app:
 
 management:
   health:
+    kafka:
+      enabled: true
     defaults:
       enabled: true
   endpoint:

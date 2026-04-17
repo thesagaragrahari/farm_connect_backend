@@ -1,15 +1,16 @@
 package com.farmconnect.krishisetu.modules.auth_service.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.*;
 
+import com.farmconnect.krishisetu.modules.auth_service.DTOs.LoginReq;
+import com.farmconnect.krishisetu.modules.auth_service.DTOs.RegisterReq;
 import com.farmconnect.krishisetu.modules.auth_service.models.ForgotPasswordRequest;
 import com.farmconnect.krishisetu.modules.auth_service.models.ResetPasswordRequest;
 import com.farmconnect.krishisetu.modules.auth_service.service.AuthService;
-import com.farmconnect.krishisetu.modules.user_service.DTOs.LoginReq;
-import com.farmconnect.krishisetu.modules.user_service.model.FarmerProfile;
 import com.farmconnect.krishisetu.modules.user_service.model.UserProfile;
-import com.farmconnect.krishisetu.modules.user_service.model.WorkerProfile;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,29 +21,33 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final AuthService authService;
+    private final JavaMailSender mailSender;
+
+    @GetMapping("/email")
+    public String sendTestMail() {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo("infosagaragrahari@gmail.com"); // your email
+            message.setSubject("Test Email");
+            message.setText("If you received this, email config is working!");
+
+            mailSender.send(message);
+
+            return "✅ Email sent successfully";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "❌ Email failed: " + e.getMessage();
+        }
+    }
 
     /* ================= REGISTER ================= */
 
     @PostMapping("/register/user")
     public ResponseEntity<String> registerUser(
-            @RequestBody UserProfile profile) {
+            @RequestBody RegisterReq registerReq) {
 
-        return authService.registerUser(profile);
-    }
-
-    @PostMapping("/complete-profile/worker")
-    public ResponseEntity<String> registerWorker(
-            @RequestBody WorkerProfile profile) {
-
-        return authService.completeWorkerProfile(profile);
-    }
-
-    @PostMapping("/complete-profile/farmer")
-    public ResponseEntity<String> registerFarmer(
-            @RequestBody FarmerProfile profile) {
-
-        return authService.completeFarmerProfile(profile);
-    }
+        return authService.registerUser(registerReq);
+    }   
 
     /* ================= LOGIN ================= */
 

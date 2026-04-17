@@ -37,7 +37,7 @@ public class ForgotPasswordRateLimiter {
 
             if (attempt.getAttemptCount() >= MAX_ATTEMPTS) {
                 throw new RuntimeException(
-                    "Too many forgot-password attempts. Try later."
+                    "Too many forgot-password attempts. Try after 12 hours."
                 );
             }
         } else {

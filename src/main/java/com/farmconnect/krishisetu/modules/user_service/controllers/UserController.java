@@ -12,8 +12,8 @@ import com.farmconnect.krishisetu.modules.user_service.model.UserProfile;
 import com.farmconnect.krishisetu.modules.user_service.model.WorkerProfile;
 import com.farmconnect.krishisetu.modules.user_service.services.UserService;
 
-import static com.farmconnect.krishisetu.shared.util.Routes.FARMER;
-import static com.farmconnect.krishisetu.shared.util.Routes.USER;
+import static com.farmconnect.krishisetu.common.util.Routes.FARMER;
+import static com.farmconnect.krishisetu.common.util.Routes.USER;
 
 import java.util.List;
 
@@ -21,12 +21,25 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
     private UserService userService;
 
+    @PostMapping("/complete-profile/worker")
+    public ResponseEntity<String> registerWorker(
+            @RequestBody WorkerProfile profile) {
+
+        return userService.completeWorkerProfile(profile);
+    }
+
+    @PostMapping("/complete-profile/farmer")
+    public ResponseEntity<String> registerFarmer(
+            @RequestBody FarmerProfile profile) {
+
+        return userService.completeFarmerProfile(profile);
+    }
 
     /*     * User Management APIs
      */

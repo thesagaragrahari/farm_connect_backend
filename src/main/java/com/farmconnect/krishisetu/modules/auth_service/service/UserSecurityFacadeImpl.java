@@ -2,7 +2,6 @@ package com.farmconnect.krishisetu.modules.auth_service.service;
 
 
 import com.farmconnect.krishisetu.security.facade.*;
-import com.farmconnect.krishisetu.modules.user_service.entity.User;
 import com.farmconnect.krishisetu.modules.user_service.repo.UserRepo;
 import com.farmconnect.krishisetu.modules.auth_service.entities.UserSecurityState;
 import com.farmconnect.krishisetu.modules.auth_service.repositories.UserSecurityStateRepository;

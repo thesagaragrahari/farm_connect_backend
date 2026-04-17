@@ -17,6 +17,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.farmconnect.krishisetu.modules.auth_service.entities.UserSecurityState;
+import com.farmconnect.krishisetu.modules.auth_service.repositories.UserSecurityStateRepository;
 import com.farmconnect.krishisetu.modules.user_service.DTOs.UserProfileSuperSet;
 import com.farmconnect.krishisetu.modules.user_service.entity.Farmer;
 import com.farmconnect.krishisetu.modules.user_service.entity.Skill;
@@ -40,6 +42,7 @@ import com.farmconnect.krishisetu.modules.user_service.repo.WorkerRepo;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.transaction.Transactional;
 
 
 
@@ -66,13 +69,15 @@ class UserService {
     UserMapper Umapper;
 
     @Autowired
-    FarmerMapper Fmapper;
+    FarmerMapper farmerMapper;
 
     @Autowired
-    WorkerMapper Wmapper;
+    WorkerMapper workerMapper;
 
     @Autowired
     SkillMapper Smapper;
+
+    UserSecurityStateRepository securityStateRepo;
 
     
     private static final Logger logger = LoggerFactory.getLogger(Service.class);
@@ -80,6 +85,56 @@ class UserService {
     
     public String helloUser() {
         return "Hello, User!";
+    }
+
+    /* =========================================================
+                        COMPLETE WORKER PROFILE
+       ========================================================= */
+
+    @Transactional
+    public ResponseEntity<String> completeWorkerProfile(
+            WorkerProfile workerProfile) {
+
+        User user = getVerifiedUser(workerProfile.getUserProfile().getEmail());
+
+        if (!"worker".equalsIgnoreCase(user.getRole()))
+            return ResponseEntity.badRequest().body("Invalid role");
+
+        if (workerRepo.existsByUser(user))
+            return ResponseEntity.badRequest().body("Profile already completed");
+
+        Worker worker = workerMapper.toWorkerEntity(workerProfile);
+        worker.setUser(user);
+        workerRepo.save(worker);
+
+        markProfileCompleted(user.getUserId());
+
+        return ResponseEntity.ok("Worker profile completed");
+    }
+
+    /* =========================================================
+                        COMPLETE FARMER PROFILE
+       ========================================================= */
+
+    @Transactional
+    public ResponseEntity<String> completeFarmerProfile(
+            FarmerProfile farmerProfile) {
+
+        User user = getVerifiedUser(farmerProfile.getUserProfile().getEmail());
+
+        if (!"farmer".equalsIgnoreCase(user.getRole()))
+            return ResponseEntity.badRequest().body("Invalid role");
+
+        if (farmerRepo.existsByUser(user))
+            return ResponseEntity.badRequest().body("Profile already completed");
+
+        Farmer farmer = farmerMapper.toFarmerEntity(farmerProfile);
+        farmer.setUser(user);
+        farmerRepo.save(farmer);
+
+        markProfileCompleted(user.getUserId());
+
+        return ResponseEntity.ok("Farmer profile completed");
     }
 
 
@@ -95,7 +150,7 @@ class UserService {
             if(farmer == null) {
                 return ResponseEntity.status(404).body("Farmer profile not found");
             }
-            FarmerProfile farmerProfile = Fmapper.toFarmerModel(farmer);
+            FarmerProfile farmerProfile = farmerMapper.toFarmerModel(farmer);
             logger.info("Farmer profile retrieved successfully for user: " + farmer);
             return ResponseEntity.ok(farmerProfile);
         }else if(roles.contains("ROLE_WORKER") && email != null) {
@@ -104,7 +159,7 @@ class UserService {
             if(worker == null) {
                 return ResponseEntity.status(404).body("Worker profile not found");
             }   
-            WorkerProfile workerProfile = Wmapper.toWorkerModel(worker);
+            WorkerProfile workerProfile = workerMapper.toWorkerModel(worker);
             logger.info("Worker profile retrieved successfully for user: " + worker);
             return ResponseEntity.ok(workerProfile);
         }
@@ -113,45 +168,6 @@ class UserService {
         return ResponseEntity.status(400).body("Invalid role specified");
     }
 
-    // public ResponseEntity<?> updateUserProfile(String email, String role, UserProfileSuperSet request) {
-    //     if(email == null || email.isEmpty() || email.isBlank() || role == null || role.isEmpty() || role.isBlank() || !UserRole.isValid(role)|| request == null) {
-    //         return ResponseEntity.badRequest().body("Invalid input parameters");
-    //     }
-    //     if(role.equalsIgnoreCase(UserRole.FARMER.name())) {
-    //         // Update Farmer Profile
-    //         FarmerProfile farmerProfile = request.getFarmerProfile();
-    //         if(farmerProfile == null) {
-    //             return ResponseEntity.badRequest().body("Farmer profile data is missing");
-    //         }
-    //         // Fetch existing farmer
-    //         Farmer existingFarmer = farmerRepo.findByUserEmail(email);
-    //         if(existingFarmer == null) {
-    //             return ResponseEntity.status(404).body("Farmer not found");
-    //         }
-    //         // Map updated fields
-    //         Fmapper.updateFarmerEntityFromModel(farmerProfile, existingFarmer);
-    //         farmerRepo.save(existingFarmer);
-    //         FarmerProfile updatedProfile = Fmapper.toFarmerModel(existingFarmer);
-    //         return ResponseEntity.ok(updatedProfile);
-    //     } else if(role.equalsIgnoreCase(UserRole.WORKER.name())) {
-    //         // Update Worker Profile
-    //         WorkerProfile workerProfile = request.getWorkerProfile();
-    //         if(workerProfile == null) {
-    //             return ResponseEntity.badRequest().body("Worker profile data is missing");
-    //         }
-    //         // Fetch existing worker
-    //         Worker existingWorker = workerRepo.findByUserEmail(email);
-    //         if(existingWorker == null) {
-    //             return ResponseEntity.status(404).body("Worker not found");
-    //         }
-    //         // Map updated fields
-    //         Wmapper.updateWorkerEntityFromModel(workerProfile, existingWorker);
-    //         workerRepo.save(existingWorker);
-    //         WorkerProfile updatedProfile = Wmapper.toWorkerModel(existingWorker);
-    //         return ResponseEntity.ok(updatedProfile);
-    //     }
-    //     return ResponseEntity.badRequest().body("Invalid role specified");
-    // }
 
     public ResponseEntity<String> updatePassword(org.springframework.security.core.userdetails.User springUser, String newPassword) {
         // TODO Auto-generated method stub
@@ -188,7 +204,7 @@ class UserService {
         }
 
         List<WorkerProfile> workerProfiles = workers.stream()
-        .map(Wmapper::toWorkerModel)
+        .map(workerMapper::toWorkerModel)
         .toList();
         return ResponseEntity.ok(workerProfiles);
 
@@ -205,7 +221,7 @@ class UserService {
             return ResponseEntity.status(404).build();
         }
         List<WorkerProfile> workerProfiles = workers.stream()
-        .map(Wmapper::toWorkerModel)
+        .map(workerMapper::toWorkerModel)
         .toList();
         return ResponseEntity.ok(workerProfiles);
 
@@ -218,7 +234,7 @@ class UserService {
             return ResponseEntity.status(404).build();
         }
         List<WorkerProfile> workerProfiles = workers.stream()
-        .map(Wmapper::toWorkerModel)
+        .map(workerMapper::toWorkerModel)
         .toList();
         return ResponseEntity.ok(workerProfiles);
     }
@@ -235,7 +251,7 @@ class UserService {
         if(worker == null) {
             return ResponseEntity.status(404).build();
         }
-        WorkerProfile workerProfile = Wmapper.toWorkerModel(worker);
+        WorkerProfile workerProfile = workerMapper.toWorkerModel(worker);
         List<SkillProfile> skillsProfile = workerProfile.getSkillsProfile();
         if(skillsProfile == null || skillsProfile.isEmpty()) {
             return ResponseEntity.status(404).build();
@@ -257,7 +273,7 @@ class UserService {
         }
         worker.setStatus(status);
         workerRepo.save(worker);
-        WorkerProfile workerProfile = Wmapper.toWorkerModel(worker);
+        WorkerProfile workerProfile = workerMapper.toWorkerModel(worker);
         return ResponseEntity.ok(workerProfile);
     }
 
@@ -292,7 +308,30 @@ class UserService {
     
 
 
+    /* =========================================================
+                        HELPER METHODS
+       ========================================================= */
     
+    private User getVerifiedUser(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        UserSecurityState state =
+                securityStateRepo.findByUserId(user.getUserId())
+                        .orElseThrow();
+
+        if (!state.isEmailVerified())
+            throw new RuntimeException("Email not verified");
+
+        return user;
+    }
+
+    private void markProfileCompleted(Long userId) {
+        UserSecurityState state =
+                securityStateRepo.findByUserId(userId)
+                        .orElseThrow();
+        state.setProfileCompleted(true);
+        securityStateRepo.save(state);
+    }
 
     
     

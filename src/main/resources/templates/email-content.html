@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        .btn { background-color: #2e7d32; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; }
+        .footer { font-size: 12px; color: #888; margin-top: 30px; text-align: center; }
+        .farmer-text { color: #2e7d32; font-weight: bold; }
+        .worker-text { color: #fb8c00; font-weight: bold; }
+    </style>
+</head>
+<body style="font-family: sans-serif; line-height: 1.6; color: #333; padding: 20px;">
+<div style="max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
+
+    <div style="text-align: center; border-bottom: 2px solid #2e7d32; padding-bottom: 10px; margin-bottom: 20px;">
+        <h1 style="color: #2e7d32;">KrishiSetu</h1>
+    </div>
+
+    <div th:switch="${event}">
+
+        <!-- EMAIL VERIFICATION -->
+        <div th:case="'EMAIL_VERIFICATION','RESEND_VERIFICATION'">
+            <h2>Verify your email</h2>
+            <p>Hello <span th:text="${name}">User</span>, please verify your account.</p>
+            <a th:href="${link}" class="btn">Verify Now</a>
+        </div>
+
+        <!-- REGISTERED + VERIFIED -->
+        <div th:case="'REGISTERED_AND_VERIFIED'">
+            <h2>Welcome to KrishiSetu!</h2>
+            <p>Hello <span th:text="${name}">User</span>, your account is now verified.</p>
+
+            <div th:if="${role == 'farmer'}">
+                <p class="farmer-text">Start hiring workers.</p>
+            </div>
+
+            <div th:if="${role == 'worker'}">
+                <p class="worker-text">Start finding jobs.</p>
+            </div>
+        </div>
+
+        <!-- FORGOT PASSWORD -->
+        <div th:case="'FORGOT_PASSWORD'">
+            <h2>Password Reset</h2>
+            <a th:href="${link}" class="btn">Reset Password</a>
+        </div>
+
+        <!-- ACCOUNT LOCKED -->
+        <div th:case="'ACCOUNT_LOCKED'">
+            <h2 style="color:red;">Account Locked</h2>
+            <a th:href="${link}" class="btn">Unlock</a>
+        </div>
+
+        <!-- DEFAULT -->
+        <div th:case="*">
+            <h2>Account Update</h2>
+            <p>Hello <span th:text="${name}">User</span>, event: <b th:text="${event}"></b></p>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <p>You received this email because you registered on KrishiSetu.</p>
+    </div>
+
+</div>
+</body>
+</html>

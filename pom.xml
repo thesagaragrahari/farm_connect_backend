@@ -107,6 +107,12 @@
         <artifactId>spring-kafka</artifactId>
     </dependency>
 
+    <!-- Thymeleaf -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
+
         <!-- FOR ENUM JSON SUPPORT (OPTIONAL BUT USEFUL) -->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>

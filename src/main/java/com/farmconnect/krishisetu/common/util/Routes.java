@@ -1,4 +1,4 @@
-package com.farmconnect.krishisetu.shared.util;
+package com.farmconnect.krishisetu.common.util;
 
 public class Routes {
 

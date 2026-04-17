@@ -1,54 +1,57 @@
 package com.farmconnect.krishisetu.modules.notification_service.service;
 
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.stereotype.Service;
+import java.nio.charset.StandardCharsets;
 
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
+import com.farmconnect.krishisetu.config.MailConfig;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final TemplateEngine templateEngine;
+    private final MailConfig mailConfig;
 
-    public void sendVerificationEmail(String to, String link) {
+    
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject("Verify Your Email");
-        message.setText("Click to verify: " + link);
+    public void sendHtmlEmail(String to, String subject, String template, Context context) {
+        try {
 
-        mailSender.send(message);
-    }
+            String htmlContent = templateEngine.process(template, context);
 
-    public void sendResetPasswordMail(String to, String link) {
+            MimeMessage message = mailSender.createMimeMessage();
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject("Reset Your Password");
-        message.setText("Click to reset: " + link);
+            MimeMessageHelper helper = new MimeMessageHelper(
+                    message,
+                    MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                    StandardCharsets.UTF_8.name()
+            );
 
-        mailSender.send(message);
-    }
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+            helper.setFrom(mailConfig.getUsername());
+            mailSender.send(message);
+            log.info("Email sent successfully to {}", to);
 
-    public void sendWelcomeEmail(String to, String name) {
-
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject("Welcome to KrishiSetu");
-        message.setText("Hi " + name + ", Welcome to KrishiSetu!");
-
-        mailSender.send(message);
-    }
-
-    public void sendPasswordChangedAlert(String to) {
-
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject("Password Changed");
-        message.setText("Your password has been successfully changed.");
-
-        mailSender.send(message);
+        } catch (MessagingException e) {
+            log.error("Failed to send email to {}", to, e);
+            throw new RuntimeException("Email sending failed", e);
+        }catch (Exception e) {
+            log.error("Unexpected error while sending email to {}", to, e);
+            throw new RuntimeException("Unexpected error during email sending", e);
+        }
     }
 }
