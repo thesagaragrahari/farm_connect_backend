@@ -7,7 +7,6 @@ import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.farmconnect.krishisetu.common.event.base.BaseEvent;
 import com.farmconnect.krishisetu.common.event.user.UserEvent;
 import com.farmconnect.krishisetu.modules.auth_service.entities.UserActionToken;
 import com.farmconnect.krishisetu.modules.auth_service.entities.UserSecurityState;
@@ -35,7 +34,7 @@ public class AuthServiceUtil {
 
     @Value("${app.backend.base-url:http://localhost:8080}")
     private String backendBaseUrl;
-    @Value("${app.frontend.reset-password-url:http://localhost:3000/reset-password}")
+    @Value("${app.frontend.base-url:http://localhost:3000/reset-password}")
     private String resetPasswordBaseUrl;
     
     /* =========================================================
@@ -96,39 +95,5 @@ public class AuthServiceUtil {
             logger.error("Error while sending email notification for event: {}", event, e);
         }
     }
-
-    
-
-    // private void publishActionTokenNotification(User user, TokenType type, String rawToken) {
-    //     NotificationEvent event = new NotificationEvent();
-    //     event.setRecipient(user.getEmail());
-
-    //     switch (type) {
-    //         case EMAIL_VERIFICATION -> {
-    //             event.setType(NotificationType.EMAIL_VERIFICATION);
-    //             event.setMetadata(
-    //                     Map.of(
-    //                             "verificationLink",
-    //                             backendBaseUrl + "/api/auth/verify-email?token=" + rawToken
-    //                     )
-    //             );
-    //         }
-    //         case PASSWORD_RESET -> {
-    //             event.setType(NotificationType.PASSWORD_RESET);
-    //             event.setMetadata(
-    //                     Map.of(
-    //                             "resetLink",
-    //                             resetPasswordBaseUrl + "?token=" + rawToken
-    //                     )
-    //             );
-    //         }
-    //         default -> {
-    //             logger.warn("No notification mapping for token type {}", type);
-    //             return;
-    //         }
-    //     }
-
-    //     notificationEventProducer.publish(event);
-    // }
 
 }
