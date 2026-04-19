@@ -97,9 +97,7 @@ public class AuthService {
         } */
         userRepo.save(user);
         serviceUtil.initSecurity(user.getUserId());
-
         String token = serviceUtil.createActionToken(user.getUserId(), TokenType.REGISTRATION);
-        
         UserEvent event = UserEvent.builder().eventType(UserEventType.REGISTERED_AND_VERIFIED)
                         .email(user.getEmail())
                         .name(user.getFullName())
@@ -107,13 +105,9 @@ public class AuthService {
                         .userId(user.getUserId())
                         .token(token)
                         .build();
-
         logger.info("Publishing user registration event for email: {}", registerReq.getEmail());
-        eventPublisher.publish(
-                KafkaTopics.USER_EVENTS,
-                event
-        );
-        
+        //eventPublisher.publish(KafkaTopics.USER_EVENTS,event);
+        serviceUtil.callEmailHandler(event);
         logger.info("Published user registration event for email: {}", registerReq.getEmail());
         //publishWelcomeMail(user);
         return ResponseEntity.ok("Registered successfully. Verify email.");
@@ -145,11 +139,14 @@ public class AuthService {
                         .build();
 
                         logger.info("Login failed sent email for user email verification event for email: {}", user.getEmail());
-                        eventPublisher.publish(
-                        "user.events",
-                        event
-                        );
-                       // serviceUtil.sendActionToken(user, TokenType.EMAIL_VERIFICATION);
+                        //commenting kafka event publish for now to ensure email is sent even if there are issues with Kafka, once kafka is working we can rely solely on kafka events for sending emails and remove this direct call
+                        //eventPublisher.publish( KafkaTopics.USER_EVENTS,event);
+                        /*
+                        Till kafka is not working so also send email directly from here, once kafka is working we can remove this direct call and rely solely on kafka events for sending emails. This is just to ensure that the user receives the verification email even if there are issues with Kafka.
+                         */
+                        serviceUtil.callEmailHandler(event);
+                        // End of direct email call
+
                 return ResponseEntity.status(401)
                         .body("Email not verified Please verify your email. A new verification link has been sent.");
                 }
@@ -196,7 +193,6 @@ public class AuthService {
     public void forgotPassword(String email) {
         try{
                 rateLimiter.validate(email);
-
                 if(userRepo.existsByEmail(email)){
                         User user = userRepo.findByEmail(email).orElseThrow();
                         UserEvent event = UserEvent.builder().eventType(UserEventType.PASSWORD_RESET)
@@ -206,12 +202,9 @@ public class AuthService {
                                         .userId(user.getUserId())
                                         .token(serviceUtil.createActionToken(user.getUserId(), TokenType.PASSWORD_RESET))
                                         .build();
-
                         logger.info("Publishing password reset event for email: {}", email);
-                        eventPublisher.publish(
-                                KafkaTopics.USER_EVENTS,
-                                event
-                        );
+                        //eventPublisher.publish(KafkaTopics.USER_EVENTS,event);
+                        serviceUtil.callEmailHandler(event);
                         logger.info("Published password reset event for email: {}", email);
                 }
                 // userRepo.findByEmail(email)

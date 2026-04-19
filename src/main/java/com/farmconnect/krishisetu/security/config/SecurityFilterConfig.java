@@ -52,6 +52,7 @@ public class SecurityFilterConfig {
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/swagger-ui.html"
+                    ,"/images/**"//access to email icons
             ).permitAll()
         .anyRequest().authenticated()
         );

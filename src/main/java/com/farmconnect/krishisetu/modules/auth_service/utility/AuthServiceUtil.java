@@ -7,13 +7,15 @@ import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.farmconnect.krishisetu.common.event.base.BaseEvent;
+import com.farmconnect.krishisetu.common.event.user.UserEvent;
 import com.farmconnect.krishisetu.modules.auth_service.entities.UserActionToken;
 import com.farmconnect.krishisetu.modules.auth_service.entities.UserSecurityState;
 
 import com.farmconnect.krishisetu.modules.auth_service.models.TokenType;
 import com.farmconnect.krishisetu.modules.auth_service.repositories.UserActionTokenRepository;
 import com.farmconnect.krishisetu.modules.auth_service.repositories.UserSecurityStateRepository;
-
+import com.farmconnect.krishisetu.modules.notification_service.handler.UserNotificationHandler;
 import com.farmconnect.krishisetu.modules.user_service.entity.User;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class AuthServiceUtil {
     private final UserSecurityStateRepository securityStateRepo;
     private final TokenUtil tokenUtil;
     private final UserActionTokenRepository tokenRepo;
+    private final UserNotificationHandler handler;
 
 
     @Value("${app.backend.base-url:http://localhost:8080}")
@@ -61,14 +64,14 @@ public class AuthServiceUtil {
     }
 
     void verifyEmail(User user, TokenType type) {
-    String token = UUID.randomUUID().toString();
-    UserActionToken actionToken = new UserActionToken();
-    actionToken.setUserId(user.getUserId());
-    actionToken.setTokenHash(token);
-    actionToken.setTokenType(type);
-    actionToken.setExpiryTime(LocalDateTime.now().plusHours(24));
-    actionTokenRepo.save(actionToken);
-    return;
+        String token = UUID.randomUUID().toString();
+        UserActionToken actionToken = new UserActionToken();
+        actionToken.setUserId(user.getUserId());
+        actionToken.setTokenHash(token);
+        actionToken.setTokenType(type);
+        actionToken.setExpiryTime(LocalDateTime.now().plusHours(24));
+        actionTokenRepo.save(actionToken);
+        return;
     }
 
 
@@ -83,6 +86,15 @@ public class AuthServiceUtil {
         tokenRepo.save(token);
         logger.info("Generated {} token for {}",type,userId );
         return raw;
+    }
+
+
+    public void callEmailHandler(UserEvent event) {
+        try{
+            handler.handle(event);
+        }catch(Exception e){
+            logger.error("Error while sending email notification for event: {}", event, e);
+        }
     }
 
     

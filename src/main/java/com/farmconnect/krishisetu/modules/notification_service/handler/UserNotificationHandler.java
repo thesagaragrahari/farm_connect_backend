@@ -33,7 +33,8 @@ public class UserNotificationHandler {
         context.setVariable("name", event.getName());
         context.setVariable("role", event.getRole());
         context.setVariable("event", event.getEventType().name());
-
+        context.setVariable("baseUrl", BACKEND_BASE_URL);
+        
         String subject;
         String template = "email-content";
 

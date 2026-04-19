@@ -10,46 +10,44 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
 @EnableKafka
 public class KafkaConsumerConfig {
 
-    @Bean
-    public ConsumerFactory<String, BaseEvent> consumerFactory() {
+        @Bean
+        public ConsumerFactory<String, String> consumerFactory() {
+                return new DefaultKafkaConsumerFactory<>(
+                        Map.of(
+                                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
+                                ConsumerConfig.GROUP_ID_CONFIG, "debug-group",
+                                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest",
+                                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
+                                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class
+                        )
+                );
+        }
 
-        JsonDeserializer<BaseEvent> deserializer =
-                new JsonDeserializer<>(BaseEvent.class);
+//     private Map<String, Object> consumerConfigs() {
+//         Map<String, Object> config = new HashMap<>();
 
-        deserializer.addTrustedPackages("*");
+//         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+//         config.put(ConsumerConfig.GROUP_ID_CONFIG, "notification-group-v2");
+//         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
-        // 🔥 IMPORTANT FOR TYPE DETECTION
-        deserializer.setUseTypeMapperForKey(false);
-        deserializer.setRemoveTypeHeaders(false);
+//         return config;
+//     }
 
-        return new DefaultKafkaConsumerFactory<>(
-                Map.of(
-                        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
-                        ConsumerConfig.GROUP_ID_CONFIG, "notification-group-v2",
-                        ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
-                        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class,
-                        JsonDeserializer.USE_TYPE_INFO_HEADERS, true,
-                        JsonDeserializer.TRUSTED_PACKAGES, "*"
-                ),
-                new StringDeserializer(),
-                deserializer
-        );
-    }
+        @Bean
+        public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
 
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, BaseEvent> kafkaListenerContainerFactory(
-            ConsumerFactory<String, BaseEvent> consumerFactory) {
+                ConcurrentKafkaListenerContainerFactory<String, String> factory =
+                        new ConcurrentKafkaListenerContainerFactory<>();
+                factory.setConsumerFactory(consumerFactory());
+                factory.setConcurrency(2); // optional
 
-        ConcurrentKafkaListenerContainerFactory<String, BaseEvent> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
-
-        factory.setConsumerFactory(consumerFactory);
-        return factory;
-    }
+                return factory;
+        }
 }
