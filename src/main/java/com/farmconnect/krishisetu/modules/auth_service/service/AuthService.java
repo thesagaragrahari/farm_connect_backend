@@ -83,9 +83,6 @@ public class AuthService {
         userProfile.setUpdatedAt(null);
         User user = userMapper.toUserEntity(userProfile);
         user.setPassword(passwordEncoder.encode(registerReq.getPassword()));
-
-
-        //kafkaTemplate.send("user.events", "test message");
         logger.info("Registering user with email: {}", registerReq.getEmail());
         /* 
         if (userProfile.getLocation() != null) {
@@ -202,7 +199,7 @@ public class AuthService {
                                         .userId(user.getUserId())
                                         .token(serviceUtil.createActionToken(user.getUserId(), TokenType.PASSWORD_RESET))
                                         .build();
-                        logger.info("Publishing password reset event for email: {}", email);
+                        //logger.info("Publishing password reset event for email: {}", email);
                         //eventPublisher.publish(KafkaTopics.USER_EVENTS,event);
                         serviceUtil.callEmailHandler(event);
                         logger.info("Published password reset event for email: {}", email);
@@ -222,7 +219,7 @@ public class AuthService {
         catch (RuntimeException e){
             // To prevent email enumeration we will not reveal if the email is registered or not
             logger.warn("Forgot password attempt for email: {} - {}", email, e.getMessage());
-             // Optionally, you can publish an event for monitoring purposes
+           // Optionally, you can publish an event for monitoring purposes
         }
         
     }
@@ -261,11 +258,10 @@ public class AuthService {
                                         //.token(serviceUtil.createActionToken(user.getUserId(), TokenType.PASSWORD_RESET))
                                         .build();
 
-                        logger.info("Password changed successfully: {}", user.getEmail());
-                        eventPublisher.publish(
-                                KafkaTopics.USER_EVENTS,
-                                event
-                        );
+        logger.info("Password changed successfully: {}", user.getEmail());
+        //eventPublisher.publish(KafkaTopics.USER_EVENTS,event);
+        serviceUtil.callEmailHandler(event);
+
     }
 
     /* =========================================================
@@ -295,14 +291,13 @@ public class AuthService {
 
         token.setUsed(true);
         tokenRepo.save(token);
-        eventPublisher.publish(
-                KafkaTopics.USER_EVENTS,
-                UserEvent.builder()
+        UserEvent event = UserEvent.builder()
                         .eventType(UserEventType.EMAIL_VERIFIED)
                         .email(userRepo.findByUserId(token.getUserId()).orElseThrow().getEmail())
                         .userId(token.getUserId())
-                        .build()
-        );
+                        .build();
+        //eventPublisher.publish(KafkaTopics.USER_EVENTS,event);
+        serviceUtil.callEmailHandler(event);
     }
 
 }
