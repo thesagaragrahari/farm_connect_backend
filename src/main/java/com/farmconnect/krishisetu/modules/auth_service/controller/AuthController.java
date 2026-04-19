@@ -43,11 +43,13 @@ public class AuthController {
     /* ================= REGISTER ================= */
 
     @PostMapping("/register/user")
-    public ResponseEntity<String> registerUser(
+    public ResponseEntity<?> registerUser(
             @RequestBody RegisterReq registerReq) {
 
         return authService.registerUser(registerReq);
-    }   
+    }
+    
+    
 
     /* ================= LOGIN ================= */
 

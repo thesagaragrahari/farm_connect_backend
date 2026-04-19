@@ -22,8 +22,8 @@ public class UserProfile {
     // @NotBlank
     // @Pattern(regexp = "farmer|worker|operator|admin", message = "Role should be valid (farmer, worker, operator, admin)")
     private String role;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    //private LocalDateTime createdAt;
+    //private LocalDateTime updatedAt;
     private PointDTO location;
-    private String password;
+    //private String password;
 }

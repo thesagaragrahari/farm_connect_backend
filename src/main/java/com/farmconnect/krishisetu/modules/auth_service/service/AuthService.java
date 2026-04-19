@@ -21,6 +21,10 @@ import org.springframework.stereotype.Service;
 
 import com.farmconnect.krishisetu.common.event.user.UserEvent;
 import com.farmconnect.krishisetu.common.event.user.UserEventType;
+import com.farmconnect.krishisetu.common.exception.ApiResponse;
+import com.farmconnect.krishisetu.common.exception.AppError;
+import com.farmconnect.krishisetu.common.exception.CentralizedException;
+import com.farmconnect.krishisetu.common.exception.SuccessMessages;
 import com.farmconnect.krishisetu.common.kafka.EventPublisher;
 import com.farmconnect.krishisetu.common.kafka.KafkaTopics;
 import com.farmconnect.krishisetu.modules.auth_service.DTOs.LoginReq;
@@ -70,17 +74,18 @@ public class AuthService {
        ========================================================= */
 
     @Transactional
-    public ResponseEntity<String> registerUser(RegisterReq registerReq) {
+    public ResponseEntity<?> registerUser(RegisterReq registerReq) {
 
         if (userRepo.existsByEmail(registerReq.getEmail()))
-            return ResponseEntity.status(409).body("Email already registered Kindly login or use another email");
+                throw new CentralizedException(AppError.EMAIL_ALREADY_EXISTS, registerReq.getEmail());
+            //return ResponseEntity.status(409).body("Email already registered Kindly login or use another email");
         UserProfile userProfile = new UserProfile();
         userProfile.setFullName(registerReq.getName());
         userProfile.setEmail(registerReq.getEmail());
         userProfile.setRole(registerReq.getRole());
         userProfile.setPhone(null); // phone is optional and can be set later
-        userProfile.setCreatedAt(LocalDateTime.now());
-        userProfile.setUpdatedAt(null);
+        //userProfile.setCreatedAt(LocalDateTime.now());
+        //userProfile.setUpdatedAt(null);
         User user = userMapper.toUserEntity(userProfile);
         user.setPassword(passwordEncoder.encode(registerReq.getPassword()));
         logger.info("Registering user with email: {}", registerReq.getEmail());
@@ -107,7 +112,7 @@ public class AuthService {
         serviceUtil.callEmailHandler(event);
         logger.info("Published user registration event for email: {}", registerReq.getEmail());
         //publishWelcomeMail(user);
-        return ResponseEntity.ok("Registered successfully. Verify email.");
+        return ResponseEntity.ok(ApiResponse.ok(SuccessMessages.USER_CREATED, Map.of("userEmail", user.getEmail())));
     }
 
     
@@ -142,10 +147,12 @@ public class AuthService {
                         Till kafka is not working so also send email directly from here, once kafka is working we can remove this direct call and rely solely on kafka events for sending emails. This is just to ensure that the user receives the verification email even if there are issues with Kafka.
                          */
                         serviceUtil.callEmailHandler(event);
+
+                        throw new CentralizedException(AppError.EMAIL_NOT_VERIFIED, loginRequest.getEmail());
                         // End of direct email call
 
-                return ResponseEntity.status(401)
-                        .body("Email not verified Please verify your email. A new verification link has been sent.");
+                // return ResponseEntity.status(401)
+                //         .body("Email not verified Please verify your email. A new verification link has been sent.");
                 }
 
                 Authentication authentication =
@@ -165,20 +172,18 @@ public class AuthService {
                     (UserDetails) authentication.getPrincipal()
             );
 
-            return ResponseEntity.ok(
-                    Map.of(
-                            "token", jwt,
-                            "profileCompleted", state.isProfileCompleted()
-                    )
-            );
+        UserProfile profile = userMapper.toUserProfile(user);
+        return ResponseEntity.ok(
+                ApiResponse.ok(
+                        state.isProfileCompleted() ? SuccessMessages.USER_LOGGED_IN_Y : SuccessMessages.USER_LOGGED_IN_N,
+                                Map.of("userProfile", profile, "token", jwt, "profileCompleted", state.isProfileCompleted())
+                        ));
         }
         catch (LockedException e) {
-            return ResponseEntity.status(401)
-                    .body("Account locked");
+                throw new CentralizedException(AppError.USER_ACCOUNT_LOCKED, loginRequest.getEmail());
         }
         catch (BadCredentialsException e) {
-            return ResponseEntity.status(401)
-                    .body("Invalid credentials");
+                throw new CentralizedException(AppError.AUTH_INVALID_CREDENTIALS, loginRequest.getEmail());
         }
     }
 
@@ -204,17 +209,6 @@ public class AuthService {
                         serviceUtil.callEmailHandler(event);
                         logger.info("Published password reset event for email: {}", email);
                 }
-                // userRepo.findByEmail(email)
-                //         .ifPresent(user ->
-                //                 serviceUtil.createActionToken(user.getUserId(), TokenType.PASSWORD_RESET)
-                //                 UserEvent event = UserEvent.builder().eventType(UserEventType.PASSWORDRESET)
-                //                                 .email(user.getEmail())
-                //                                 .name(user.getFullName())
-                //                                 .role(user.getRole().toString())
-                //                                 .userId(user.getUserId())
-                //                                 .token(serviceUtil.createActionToken(user.getUserId(), TokenType.PASSWORD_RESET))
-                //                                 .build();
-                //         );
         }
         catch (RuntimeException e){
             // To prevent email enumeration we will not reveal if the email is registered or not
