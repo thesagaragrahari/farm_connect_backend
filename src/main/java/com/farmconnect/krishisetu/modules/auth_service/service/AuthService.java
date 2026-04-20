@@ -172,7 +172,7 @@ public class AuthService {
                     (UserDetails) authentication.getPrincipal()
             );
 
-        UserProfile profile = userMapper.toUserProfile(user);
+        UserProfile profile = userMapper.toUserModel(user);
         return ResponseEntity.ok(
                 ApiResponse.ok(
                         state.isProfileCompleted() ? SuccessMessages.USER_LOGGED_IN_Y : SuccessMessages.USER_LOGGED_IN_N,
